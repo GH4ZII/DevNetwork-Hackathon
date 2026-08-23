@@ -1,14 +1,23 @@
-# Internal spec
-project.md
-
 # Dependencies
 node_modules/
 .pnp
 .pnp.js
 
-# Next.js
-.next/
-out/
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+android/
+ios/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
 
 # Env
 .env
@@ -28,9 +37,5 @@ Thumbs.db
 .vscode/
 *.swp
 
-# Vercel
-.vercel
-
 # TypeScript
-next-env.d.ts
 *.tsbuildinfo
