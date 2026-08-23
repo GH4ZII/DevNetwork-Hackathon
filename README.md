@@ -31,7 +31,7 @@ The app never talks to SerpApi or Perfect Corp directly.
 
 ## Getting started
 
-Phase 0 proves SerpApi and Perfect Corp **before** any UI.
+SerpApi and Perfect Corp are proven. Next is the Phase 1 backend + ugly Expo slice.
 
 ```bash
 npm install
@@ -42,20 +42,6 @@ Add keys to `.env`:
 
 1. [SerpApi signup](https://serpapi.com/users/sign_up) → `SERPAPI_API_KEY`
 2. [YouCam / Perfect Corp API keys](https://yce.makeupar.com/api-console/en/api-keys/) → `PERFECT_CORP_API_KEY`
-
-Then:
-
-```bash
-npm run phase0:serpapi
-```
-
-For shoes try-on, put a clear head-to-chest selfie at `assets/demo/selfie.jpg` (gitignored), then:
-
-```bash
-npm run phase0:perfect -- male
-```
-
-Successful runs write redacted JSON under `fixtures/` and a try-on image at `assets/demo/try-on-result.jpg`. Do not start the Expo UI until both scripts pass.
 
 ### Environment variables
 
