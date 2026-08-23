@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
+import { useMemo } from "react";
 import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
-import { colors, radii, shadows, spacing } from "./theme";
+import { useTheme } from "./ThemeProvider";
+import { radii, shadows, spacing, type ThemeColors } from "./theme";
 
 type Props = {
   children: ReactNode;
@@ -9,6 +11,9 @@ type Props = {
 };
 
 export function GlassCard({ children, style, padded = true }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={[styles.card, padded && styles.padded, style]}>
       {children}
@@ -16,15 +21,17 @@ export function GlassCard({ children, style, padded = true }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.glass,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-    borderRadius: radii.lg,
-    ...shadows.card,
-  },
-  padded: {
-    padding: spacing.lg,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: colors.glass,
+      borderWidth: 1,
+      borderColor: colors.glassBorder,
+      borderRadius: radii.lg,
+      ...shadows.card,
+    },
+    padded: {
+      padding: spacing.lg,
+    },
+  });
+}

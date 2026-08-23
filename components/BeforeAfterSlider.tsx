@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
   LayoutChangeEvent,
@@ -18,7 +18,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { lightImpact } from "../lib/haptics";
-import { colors, radii, spacing, type } from "./theme";
+import { useTheme } from "./ThemeProvider";
+import { radii, spacing, type, type ThemeColors } from "./theme";
 
 type Props = {
   beforeUri: string;
@@ -37,6 +38,8 @@ function loadAspect(uri: string): Promise<number> {
 }
 
 export function BeforeAfterSlider({ beforeUri, afterUri }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [containerWidth, setContainerWidth] = useState(0);
   const [beforeAspect, setBeforeAspect] = useState(0);
   const widthSv = useSharedValue(0);
@@ -165,72 +168,74 @@ export function BeforeAfterSlider({ beforeUri, afterUri }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  outer: {
-    width: "100%",
-    alignItems: "center",
-    backgroundColor: colors.surface,
-    borderRadius: radii.lg,
-  },
-  frame: {
-    position: "relative",
-    overflow: "hidden",
-    backgroundColor: colors.canvas,
-    borderRadius: radii.md,
-  },
-  beforeClip: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    overflow: "hidden",
-  },
-  handle: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: 36,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  line: {
-    position: "absolute",
-    width: 2,
-    height: "100%",
-    backgroundColor: colors.text,
-  },
-  knob: {
-    width: 36,
-    height: 36,
-    borderRadius: radii.full,
-    backgroundColor: colors.text,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  knobText: {
-    color: colors.primaryText,
-    fontWeight: "700",
-    fontSize: 12,
-  },
-  beforeTag: {
-    position: "absolute",
-    top: spacing.md,
-    left: spacing.md,
-    backgroundColor: colors.overlay,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: radii.sm,
-  },
-  afterTag: {
-    position: "absolute",
-    top: spacing.md,
-    right: spacing.md,
-    backgroundColor: colors.overlay,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: radii.sm,
-  },
-  tagText: {
-    ...type.label,
-    color: colors.text,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    outer: {
+      width: "100%",
+      alignItems: "center",
+      backgroundColor: colors.surface,
+      borderRadius: radii.lg,
+    },
+    frame: {
+      position: "relative",
+      overflow: "hidden",
+      backgroundColor: colors.canvas,
+      borderRadius: radii.md,
+    },
+    beforeClip: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      overflow: "hidden",
+    },
+    handle: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: 36,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    line: {
+      position: "absolute",
+      width: 2,
+      height: "100%",
+      backgroundColor: colors.text,
+    },
+    knob: {
+      width: 36,
+      height: 36,
+      borderRadius: radii.full,
+      backgroundColor: colors.text,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    knobText: {
+      color: colors.primaryText,
+      fontWeight: "700",
+      fontSize: 12,
+    },
+    beforeTag: {
+      position: "absolute",
+      top: spacing.md,
+      left: spacing.md,
+      backgroundColor: colors.overlay,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderRadius: radii.sm,
+    },
+    afterTag: {
+      position: "absolute",
+      top: spacing.md,
+      right: spacing.md,
+      backgroundColor: colors.overlay,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderRadius: radii.sm,
+    },
+    tagText: {
+      ...type.label,
+      color: "#FFFFFF",
+    },
+  });
+}

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -16,7 +16,8 @@ import { session } from "../../lib/session";
 import { GlassButton } from "../../components/GlassButton";
 import { GlassCard } from "../../components/GlassCard";
 import { PrimaryButton } from "../../components/PrimaryButton";
-import { colors, radii, shadows, spacing, type } from "../../components/theme";
+import { useTheme } from "../../components/ThemeProvider";
+import { radii, shadows, spacing, type, type ThemeColors } from "../../components/theme";
 import type { ProductCategory, ScanResult } from "../../types/realitylens";
 
 const demoSelfie = require("../../assets/demo/selfie.jpg");
@@ -71,7 +72,7 @@ function frameLabel(
   }
 }
 
-function FrameGuide({ tryOnCategory, garmentCategory }) {
+function FrameGuide({ tryOnCategory, garmentCategory, styles }) {
   if (tryOnCategory === "watch") {
     return (
       <View style={styles.silhouette}>
@@ -94,6 +95,8 @@ function FrameGuide({ tryOnCategory, garmentCategory }) {
 export default function TryOnScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [userUri, setUserUri] = useState(null);
   const [productImageUrl, setProductImageUrl] = useState(undefined);
   const [tryOnCategory, setTryOnCategory] = useState(undefined);
@@ -238,6 +241,7 @@ export default function TryOnScreen() {
         <FrameGuide
           tryOnCategory={tryOnCategory}
           garmentCategory={garmentCategory}
+          styles={styles}
         />
         <Text style={styles.frameLabel}>
           {frameLabel(tryOnCategory, garmentCategory)}
@@ -300,7 +304,8 @@ export default function TryOnScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   screen: {
     padding: spacing.xl,
     gap: spacing.lg,
@@ -405,3 +410,4 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
 });
+}

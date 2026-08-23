@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -8,7 +9,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { lightImpact } from "../lib/haptics";
-import { colors, radii, shadows, spacing, tabBarHeight, type } from "./theme";
+import { useTheme } from "./ThemeProvider";
+import { radii, shadows, spacing, tabBarHeight, type, type ThemeColors } from "./theme";
 
 type TabConfig = {
   name: string;
@@ -36,10 +38,14 @@ function TabItem({
   tab,
   focused,
   onPress,
+  colors,
+  styles,
 }: {
   tab: TabConfig;
   focused: boolean;
   onPress: () => void;
+  colors: ThemeColors;
+  styles: ReturnType<typeof createStyles>;
 }) {
   const scale = useSharedValue(1);
 
@@ -95,6 +101,8 @@ function TabItem({
 
 export function TabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const currentRoute = state.routes[state.index]?.name;
 
   if (currentRoute === "camera") {
@@ -113,6 +121,8 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
               key={tab.name}
               tab={tab}
               focused={focused}
+              colors={colors}
+              styles={styles}
               onPress={() => {
                 const route = state.routes[routeIndex];
                 if (route) {
@@ -134,70 +144,72 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    position: "absolute",
-    left: spacing.lg,
-    right: spacing.lg,
-    bottom: 0,
-  },
-  bar: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-around",
-    backgroundColor: colors.surfaceRaised,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-    borderRadius: radii.xl,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.sm,
-    paddingHorizontal: spacing.xs,
-    minHeight: tabBarHeight,
-    ...shadows.tabBar,
-  },
-  tab: {
-    flex: 1,
-    alignItems: "center",
-  },
-  tabInner: {
-    alignItems: "center",
-    gap: 2,
-    paddingVertical: spacing.xs,
-  },
-  tabLabel: {
-    ...type.label,
-    fontSize: 10,
-    color: colors.textDim,
-    textTransform: "none",
-    letterSpacing: 0,
-  },
-  tabLabelActive: {
-    color: colors.text,
-  },
-  dot: {
-    width: 4,
-    height: 4,
-    borderRadius: radii.full,
-    backgroundColor: colors.accent,
-    marginTop: 2,
-  },
-  dotPlaceholder: {
-    width: 4,
-    height: 4,
-    marginTop: 2,
-  },
-  cameraWrap: {
-    flex: 1,
-    alignItems: "center",
-    marginTop: -spacing.xxl,
-  },
-  cameraBtn: {
-    width: 56,
-    height: 56,
-    borderRadius: radii.full,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-    ...shadows.cameraButton,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      position: "absolute",
+      left: spacing.lg,
+      right: spacing.lg,
+      bottom: 0,
+    },
+    bar: {
+      flexDirection: "row",
+      alignItems: "flex-end",
+      justifyContent: "space-around",
+      backgroundColor: colors.surfaceRaised,
+      borderWidth: 1,
+      borderColor: colors.glassBorder,
+      borderRadius: radii.xl,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.sm,
+      paddingHorizontal: spacing.xs,
+      minHeight: tabBarHeight,
+      ...shadows.tabBar,
+    },
+    tab: {
+      flex: 1,
+      alignItems: "center",
+    },
+    tabInner: {
+      alignItems: "center",
+      gap: 2,
+      paddingVertical: spacing.xs,
+    },
+    tabLabel: {
+      ...type.label,
+      fontSize: 10,
+      color: colors.textDim,
+      textTransform: "none",
+      letterSpacing: 0,
+    },
+    tabLabelActive: {
+      color: colors.text,
+    },
+    dot: {
+      width: 4,
+      height: 4,
+      borderRadius: radii.full,
+      backgroundColor: colors.accent,
+      marginTop: 2,
+    },
+    dotPlaceholder: {
+      width: 4,
+      height: 4,
+      marginTop: 2,
+    },
+    cameraWrap: {
+      flex: 1,
+      alignItems: "center",
+      marginTop: -spacing.xxl,
+    },
+    cameraBtn: {
+      width: 56,
+      height: 56,
+      borderRadius: radii.full,
+      backgroundColor: colors.primary,
+      alignItems: "center",
+      justifyContent: "center",
+      ...shadows.cameraButton,
+    },
+  });
+}

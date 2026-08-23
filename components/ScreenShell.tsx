@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useMemo } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -7,7 +8,8 @@ import {
   type ViewStyle,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors, spacing, tabBarHeight } from "./theme";
+import { useTheme } from "./ThemeProvider";
+import { spacing, tabBarHeight, type ThemeColors } from "./theme";
 
 type Props = {
   children: ReactNode;
@@ -25,6 +27,8 @@ export function ScreenShell({
   contentStyle,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const bottomPad = hideTabPadding
     ? insets.bottom + spacing.lg
     : insets.bottom + tabBarHeight + spacing.xl;
@@ -60,33 +64,35 @@ export function ScreenShell({
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: colors.canvas,
-  },
-  glow: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 280,
-    backgroundColor: colors.gradientTop,
-  },
-  gradient: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
-  },
-  scroll: {
-    flex: 1,
-    backgroundColor: colors.canvas,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    backgroundColor: colors.canvas,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: colors.canvas,
+    },
+    glow: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 280,
+      backgroundColor: colors.gradientTop,
+    },
+    gradient: {
+      flex: 1,
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.lg,
+    },
+    scroll: {
+      flex: 1,
+      backgroundColor: colors.canvas,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      backgroundColor: colors.canvas,
+    },
+  });
+}

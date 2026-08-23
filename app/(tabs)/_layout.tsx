@@ -1,9 +1,11 @@
 // @ts-nocheck
 import { Tabs } from "expo-router";
 import { TabBar } from "../../components/TabBar";
-import { colors } from "../../components/theme";
+import { useTheme } from "../../components/ThemeProvider";
 
 export default function TabsLayout() {
+  const { colors } = useTheme();
+
   return (
     <Tabs
       tabBar={(props) => <TabBar {...props} />}

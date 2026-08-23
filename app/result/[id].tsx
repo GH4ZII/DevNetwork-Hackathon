@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -18,12 +18,15 @@ import { session } from "../../lib/session";
 import { BeforeAfterSlider } from "../../components/BeforeAfterSlider";
 import { GlassButton } from "../../components/GlassButton";
 import { PrimaryButton } from "../../components/PrimaryButton";
-import { colors, radii, shadows, spacing, type } from "../../components/theme";
+import { useTheme } from "../../components/ThemeProvider";
+import { radii, shadows, spacing, type, type ThemeColors } from "../../components/theme";
 
 export default function ResultScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [resultUrl, setResultUrl] = useState(session.lastResultImageUrl);
   const [error, setError] = useState(null);
   const userUri = session.lastUserImageUri;
@@ -137,74 +140,76 @@ export default function ResultScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.canvas,
-  },
-  glow: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 200,
-    backgroundColor: colors.gradientTop,
-  },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
-  },
-  centered: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.canvas,
-    padding: spacing.xl,
-    gap: spacing.lg,
-  },
-  sliderArea: {
-    width: "100%",
-  },
-  afterOnly: {
-    width: "100%",
-    minHeight: 320,
-    borderRadius: radii.lg,
-    backgroundColor: colors.surface,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-    ...shadows.card,
-  },
-  afterImage: {
-    width: "100%",
-    height: "100%",
-  },
-  bottom: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.md,
-    gap: spacing.md,
-    backgroundColor: colors.surfaceRaised,
-    borderTopWidth: 1,
-    borderTopColor: colors.glassBorder,
-  },
-  caption: {
-    ...type.label,
-    color: colors.accent,
-    textTransform: "uppercase",
-  },
-  row: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  flex: { flex: 1 },
-  error: {
-    ...type.body,
-    color: colors.error,
-    textAlign: "center",
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.canvas,
+    },
+    glow: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 200,
+      backgroundColor: colors.gradientTop,
+    },
+    scroll: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      paddingHorizontal: spacing.md,
+      paddingBottom: spacing.md,
+    },
+    centered: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.canvas,
+      padding: spacing.xl,
+      gap: spacing.lg,
+    },
+    sliderArea: {
+      width: "100%",
+    },
+    afterOnly: {
+      width: "100%",
+      minHeight: 320,
+      borderRadius: radii.lg,
+      backgroundColor: colors.surface,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: colors.glassBorder,
+      ...shadows.card,
+    },
+    afterImage: {
+      width: "100%",
+      height: "100%",
+    },
+    bottom: {
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.md,
+      gap: spacing.md,
+      backgroundColor: colors.surfaceRaised,
+      borderTopWidth: 1,
+      borderTopColor: colors.glassBorder,
+    },
+    caption: {
+      ...type.label,
+      color: colors.accent,
+      textTransform: "uppercase",
+    },
+    row: {
+      flexDirection: "row",
+      gap: spacing.sm,
+    },
+    flex: { flex: 1 },
+    error: {
+      ...type.body,
+      color: colors.error,
+      textAlign: "center",
+    },
+  });
+}

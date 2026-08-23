@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -18,18 +18,21 @@ import { MerchantCard } from "../../components/MerchantCard";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { PriceFrom } from "../../components/PriceFrom";
 import { MatchScreenSkeleton } from "../../components/Skeleton";
+import { useTheme } from "../../components/ThemeProvider";
 import {
-  colors,
   formatCategory,
   radii,
   shadows,
   spacing,
   type,
+  type ThemeColors,
 } from "../../components/theme";
 
 export default function MatchScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const scrollRef = useRef(null);
   const [scan, setScan] = useState(null);
   const [error, setError] = useState(null);
@@ -106,41 +109,41 @@ export default function MatchScreen() {
         style={styles.heroBody}
       >
         <GlassCard style={styles.infoCard}>
-        <MatchLabelBadge label={match?.label} />
-        <Text style={styles.title}>{match?.title ?? "Similar products"}</Text>
-        {match?.category ? (
-          <Text style={styles.category}>{formatCategory(match.category)}</Text>
-        ) : null}
-        <PriceFrom offers={scan.offers} />
-
-        {!match ? (
-          <Text style={styles.meta}>
-            No clear visual match — browse shopping results below.
-          </Text>
-        ) : null}
-
-        <View style={styles.ctaRow}>
-          {scan.tryOnSupported ? (
-            <PrimaryButton
-              label="Try On"
-              onPress={() => router.push(`/try-on/${scan.scanId}`)}
-              style={styles.ctaFlex}
-            />
+          <MatchLabelBadge label={match?.label} />
+          <Text style={styles.title}>{match?.title ?? "Similar products"}</Text>
+          {match?.category ? (
+            <Text style={styles.category}>{formatCategory(match.category)}</Text>
           ) : null}
-          {scan.offers.length > 0 ? (
-            <GlassButton
-              label="View Deals"
-              onPress={viewDeals}
-              style={styles.ctaFlex}
-            />
-          ) : null}
-        </View>
+          <PriceFrom offers={scan.offers} />
 
-        {!scan.tryOnSupported && match ? (
-          <Text style={styles.meta}>
-            Try-on is available for shoes, clothing, and watches.
-          </Text>
-        ) : null}
+          {!match ? (
+            <Text style={styles.meta}>
+              No clear visual match — browse shopping results below.
+            </Text>
+          ) : null}
+
+          <View style={styles.ctaRow}>
+            {scan.tryOnSupported ? (
+              <PrimaryButton
+                label="Try On"
+                onPress={() => router.push(`/try-on/${scan.scanId}`)}
+                style={styles.ctaFlex}
+              />
+            ) : null}
+            {scan.offers.length > 0 ? (
+              <GlassButton
+                label="View Deals"
+                onPress={viewDeals}
+                style={styles.ctaFlex}
+              />
+            ) : null}
+          </View>
+
+          {!scan.tryOnSupported && match ? (
+            <Text style={styles.meta}>
+              Try-on is available for shoes, clothing, and watches.
+            </Text>
+          ) : null}
         </GlassCard>
       </Animated.View>
 
@@ -161,83 +164,85 @@ export default function MatchScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    paddingBottom: spacing.xxxl,
-    backgroundColor: colors.canvas,
-  },
-  centered: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.canvas,
-    padding: spacing.xl,
-    gap: spacing.lg,
-  },
-  emptyTitle: {
-    ...type.title,
-    color: colors.text,
-    textAlign: "center",
-  },
-  emptyCopy: {
-    ...type.body,
-    color: colors.textMuted,
-    textAlign: "center",
-  },
-  heroWrap: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
-  },
-  hero: {
-    width: "100%",
-    height: 320,
-    borderRadius: radii.lg,
-    backgroundColor: colors.surface,
-    ...shadows.card,
-  },
-  heroEmpty: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  heroBody: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
-  },
-  infoCard: {
-    gap: spacing.sm,
-  },
-  title: {
-    ...type.title,
-    color: colors.text,
-  },
-  category: {
-    ...type.subtitle,
-    color: colors.textMuted,
-  },
-  ctaRow: {
-    flexDirection: "row",
-    gap: spacing.md,
-    marginTop: spacing.md,
-  },
-  ctaFlex: { flex: 1 },
-  deals: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xxl,
-    gap: spacing.md,
-  },
-  section: {
-    ...type.title,
-    fontSize: 20,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  meta: {
-    ...type.body,
-    color: colors.textMuted,
-  },
-  error: {
-    ...type.body,
-    color: colors.error,
-    textAlign: "center",
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: {
+      paddingBottom: spacing.xxxl,
+      backgroundColor: colors.canvas,
+    },
+    centered: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.canvas,
+      padding: spacing.xl,
+      gap: spacing.lg,
+    },
+    emptyTitle: {
+      ...type.title,
+      color: colors.text,
+      textAlign: "center",
+    },
+    emptyCopy: {
+      ...type.body,
+      color: colors.textMuted,
+      textAlign: "center",
+    },
+    heroWrap: {
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.lg,
+    },
+    hero: {
+      width: "100%",
+      height: 320,
+      borderRadius: radii.lg,
+      backgroundColor: colors.surface,
+      ...shadows.card,
+    },
+    heroEmpty: {
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    heroBody: {
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.lg,
+    },
+    infoCard: {
+      gap: spacing.sm,
+    },
+    title: {
+      ...type.title,
+      color: colors.text,
+    },
+    category: {
+      ...type.subtitle,
+      color: colors.textMuted,
+    },
+    ctaRow: {
+      flexDirection: "row",
+      gap: spacing.md,
+      marginTop: spacing.md,
+    },
+    ctaFlex: { flex: 1 },
+    deals: {
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.xxl,
+      gap: spacing.md,
+    },
+    section: {
+      ...type.title,
+      fontSize: 20,
+      color: colors.text,
+      marginBottom: spacing.xs,
+    },
+    meta: {
+      ...type.body,
+      color: colors.textMuted,
+    },
+    error: {
+      ...type.body,
+      color: colors.error,
+      textAlign: "center",
+    },
+  });
+}

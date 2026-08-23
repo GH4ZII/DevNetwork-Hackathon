@@ -1,13 +1,15 @@
 // @ts-nocheck
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GlassCard } from "../../components/GlassCard";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { ScreenShell } from "../../components/ScreenShell";
-import { colors, radii, spacing, type } from "../../components/theme";
+import { useTheme } from "../../components/ThemeProvider";
+import { radii, spacing, type, type ThemeColors } from "../../components/theme";
 
 const TIPS = [
   {
@@ -30,6 +32,8 @@ const TIPS = [
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <ScreenShell scroll contentStyle={{ paddingTop: insets.top + spacing.lg }}>
@@ -71,66 +75,68 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  kicker: {
-    ...type.label,
-    color: colors.accent,
-    textTransform: "uppercase",
-    marginBottom: spacing.xs,
-  },
-  heroCard: {
-    marginBottom: spacing.xxl,
-    gap: spacing.sm,
-  },
-  heroTitle: {
-    ...type.title,
-    fontSize: 20,
-    color: colors.text,
-  },
-  heroCopy: {
-    ...type.body,
-    color: colors.textMuted,
-  },
-  heroBtn: {
-    marginTop: spacing.sm,
-  },
-  sectionTitle: {
-    ...type.subtitle,
-    color: colors.text,
-    fontWeight: "600",
-    marginBottom: spacing.md,
-  },
-  tips: {
-    gap: spacing.md,
-  },
-  tipCard: {
-    padding: spacing.md,
-  },
-  tipRow: {
-    flexDirection: "row",
-    gap: spacing.md,
-    alignItems: "flex-start",
-  },
-  tipIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: radii.sm,
-    backgroundColor: colors.surface,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tipBody: {
-    flex: 1,
-    gap: 2,
-  },
-  tipTitle: {
-    ...type.subtitle,
-    fontSize: 15,
-    color: colors.text,
-    fontWeight: "600",
-  },
-  tipCopy: {
-    ...type.caption,
-    color: colors.textMuted,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    kicker: {
+      ...type.label,
+      color: colors.accent,
+      textTransform: "uppercase",
+      marginBottom: spacing.xs,
+    },
+    heroCard: {
+      marginBottom: spacing.xxl,
+      gap: spacing.sm,
+    },
+    heroTitle: {
+      ...type.title,
+      fontSize: 20,
+      color: colors.text,
+    },
+    heroCopy: {
+      ...type.body,
+      color: colors.textMuted,
+    },
+    heroBtn: {
+      marginTop: spacing.sm,
+    },
+    sectionTitle: {
+      ...type.subtitle,
+      color: colors.text,
+      fontWeight: "600",
+      marginBottom: spacing.md,
+    },
+    tips: {
+      gap: spacing.md,
+    },
+    tipCard: {
+      padding: spacing.md,
+    },
+    tipRow: {
+      flexDirection: "row",
+      gap: spacing.md,
+      alignItems: "flex-start",
+    },
+    tipIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: radii.sm,
+      backgroundColor: colors.surface,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    tipBody: {
+      flex: 1,
+      gap: 2,
+    },
+    tipTitle: {
+      ...type.subtitle,
+      fontSize: 15,
+      color: colors.text,
+      fontWeight: "600",
+    },
+    tipCopy: {
+      ...type.caption,
+      color: colors.textMuted,
+    },
+  });
+}

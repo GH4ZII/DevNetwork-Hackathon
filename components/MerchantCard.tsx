@@ -1,6 +1,8 @@
+import { useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { openExternalUrl } from "../lib/openUrl";
-import { colors, radii, shadows, spacing, type } from "./theme";
+import { useTheme } from "./ThemeProvider";
+import { radii, shadows, spacing, type, type ThemeColors } from "./theme";
 import type { Offer } from "../types/realitylens";
 
 type Props = {
@@ -8,6 +10,9 @@ type Props = {
 };
 
 export function MerchantCard({ offer }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <Pressable
       style={styles.card}
@@ -46,60 +51,62 @@ export function MerchantCard({ offer }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: "row",
-    gap: spacing.md,
-    backgroundColor: colors.glass,
-    borderRadius: radii.lg,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-    ...shadows.card,
-  },
-  thumb: {
-    width: 64,
-    height: 64,
-    borderRadius: radii.sm,
-    backgroundColor: colors.surface,
-  },
-  thumbEmpty: {
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-  },
-  body: { flex: 1, gap: 2, justifyContent: "center" },
-  merchant: {
-    ...type.label,
-    color: colors.textMuted,
-    textTransform: "uppercase",
-  },
-  title: {
-    ...type.body,
-    color: colors.text,
-    fontWeight: "600",
-  },
-  metaRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-    marginTop: 2,
-    alignItems: "center",
-  },
-  price: {
-    ...type.caption,
-    color: colors.text,
-    fontWeight: "700",
-  },
-  meta: {
-    ...type.caption,
-    color: colors.textMuted,
-  },
-  inStock: {
-    ...type.caption,
-    color: colors.success,
-  },
-  outOfStock: {
-    ...type.caption,
-    color: colors.error,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    card: {
+      flexDirection: "row",
+      gap: spacing.md,
+      backgroundColor: colors.glass,
+      borderRadius: radii.lg,
+      padding: spacing.md,
+      borderWidth: 1,
+      borderColor: colors.glassBorder,
+      ...shadows.card,
+    },
+    thumb: {
+      width: 64,
+      height: 64,
+      borderRadius: radii.sm,
+      backgroundColor: colors.surface,
+    },
+    thumbEmpty: {
+      borderWidth: 1,
+      borderColor: colors.glassBorder,
+    },
+    body: { flex: 1, gap: 2, justifyContent: "center" },
+    merchant: {
+      ...type.label,
+      color: colors.textMuted,
+      textTransform: "uppercase",
+    },
+    title: {
+      ...type.body,
+      color: colors.text,
+      fontWeight: "600",
+    },
+    metaRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.sm,
+      marginTop: 2,
+      alignItems: "center",
+    },
+    price: {
+      ...type.caption,
+      color: colors.text,
+      fontWeight: "700",
+    },
+    meta: {
+      ...type.caption,
+      color: colors.textMuted,
+    },
+    inStock: {
+      ...type.caption,
+      color: colors.success,
+    },
+    outOfStock: {
+      ...type.caption,
+      color: colors.error,
+    },
+  });
+}

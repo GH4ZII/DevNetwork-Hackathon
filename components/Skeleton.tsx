@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -6,7 +6,8 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated";
-import { colors, radii, spacing } from "./theme";
+import { useTheme } from "./ThemeProvider";
+import { radii, spacing, type ThemeColors } from "./theme";
 
 type SkeletonProps = {
   width?: number | `${number}%` | "100%";
@@ -21,6 +22,8 @@ export function Skeleton({
   radius = radii.md,
   style,
 }: SkeletonProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const pulse = useSharedValue(0.35);
 
   useEffect(() => {
@@ -44,6 +47,9 @@ export function Skeleton({
 }
 
 export function MatchScreenSkeleton() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.screen}>
       <Skeleton height={340} radius={radii.lg} style={{ marginHorizontal: spacing.xl, marginTop: spacing.lg }} />
@@ -67,30 +73,32 @@ export function MatchScreenSkeleton() {
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    backgroundColor: colors.glass,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-  },
-  screen: {
-    flex: 1,
-    backgroundColor: colors.canvas,
-  },
-  body: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
-    gap: spacing.sm,
-  },
-  ctaRow: {
-    flexDirection: "row",
-    gap: spacing.md,
-    marginTop: spacing.md,
-  },
-  ctaFlex: { flex: 1 },
-  deals: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xxl,
-    gap: spacing.md,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    base: {
+      backgroundColor: colors.glass,
+      borderWidth: 1,
+      borderColor: colors.glassBorder,
+    },
+    screen: {
+      flex: 1,
+      backgroundColor: colors.canvas,
+    },
+    body: {
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.lg,
+      gap: spacing.sm,
+    },
+    ctaRow: {
+      flexDirection: "row",
+      gap: spacing.md,
+      marginTop: spacing.md,
+    },
+    ctaFlex: { flex: 1 },
+    deals: {
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.xxl,
+      gap: spacing.md,
+    },
+  });
+}

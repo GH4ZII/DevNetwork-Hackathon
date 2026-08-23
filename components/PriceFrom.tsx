@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { StyleSheet, Text } from "react-native";
-import { colors, type } from "./theme";
+import { useTheme } from "./ThemeProvider";
+import { type, type ThemeColors } from "./theme";
 import type { Offer } from "../types/realitylens";
 
 type Props = {
@@ -26,14 +28,18 @@ export function lowestPriceText(offers: Offer[]): string | null {
 }
 
 export function PriceFrom({ offers }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const price = lowestPriceText(offers);
   if (!price) return null;
   return <Text style={styles.price}>From {price}</Text>;
 }
 
-const styles = StyleSheet.create({
-  price: {
-    ...type.price,
-    color: colors.text,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    price: {
+      ...type.price,
+      color: colors.text,
+    },
+  });
+}

@@ -17,6 +17,7 @@
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
     "@hono/node-server": "^2.1.1",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "babel-preset-expo": "~54.0.10",
     "dotenv": "^16.6.1",
     "expo": "~54.0.0",

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
   Pressable,
@@ -21,15 +21,19 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GlassButton } from "../../components/GlassButton";
 import { PrimaryButton } from "../../components/PrimaryButton";
-import { colors, radii, spacing, type } from "../../components/theme";
+import { useTheme } from "../../components/ThemeProvider";
+import { radii, spacing, type, type ThemeColors } from "../../components/theme";
 import { lightImpact, mediumImpact } from "../../lib/haptics";
 import { session } from "../../lib/session";
 
 const demoShoe = require("../../assets/demo/shoes.jpg");
+const CAMERA_TEXT = "#FFFFFF";
 
 export default function CameraScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const cameraRef = useRef(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [imageUri, setImageUri] = useState(null);
@@ -133,8 +137,8 @@ export default function CameraScreen() {
         >
           <Ionicons name="chevron-back" size={22} color={colors.text} />
         </Pressable>
-        <Text style={styles.hero}>What did you find?</Text>
-        <Text style={styles.copy}>
+        <Text style={styles.permissionHero}>What did you find?</Text>
+        <Text style={styles.permissionCopy}>
           RealityLens needs camera access to scan products.
         </Text>
         <PrimaryButton label="Allow camera" onPress={requestPermission} />
@@ -155,7 +159,7 @@ export default function CameraScreen() {
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <Ionicons name="chevron-back" size={22} color={colors.text} />
+          <Ionicons name="chevron-back" size={22} color={CAMERA_TEXT} />
         </Pressable>
         <View style={[styles.topCopy, { paddingTop: insets.top + spacing.xxxl + spacing.md }]}>
           <Text style={styles.hero}>Ready to search?</Text>
@@ -197,7 +201,7 @@ export default function CameraScreen() {
         accessibilityRole="button"
         accessibilityLabel="Go back"
       >
-        <Ionicons name="chevron-back" size={22} color={colors.text} />
+        <Ionicons name="chevron-back" size={22} color={CAMERA_TEXT} />
       </Pressable>
       <View style={[styles.topCopy, { paddingTop: insets.top + spacing.xxxl + spacing.md }]}>
         <Text style={styles.kicker}>RealityLens</Text>
@@ -237,7 +241,8 @@ export default function CameraScreen() {
 const CORNER = 22;
 const CORNER_THICK = 2;
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.canvas,
@@ -254,14 +259,15 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radii.full,
-    backgroundColor: colors.glass,
+    backgroundColor: "rgba(0,0,0,0.45)",
     borderWidth: 1,
-    borderColor: colors.glassBorder,
+    borderColor: "rgba(255,255,255,0.25)",
     alignItems: "center",
     justifyContent: "center",
   },
   backBtnSolid: {
     backgroundColor: colors.surfaceRaised,
+    borderColor: colors.glassBorder,
   },
   topCopy: {
     paddingHorizontal: spacing.xl,
@@ -269,7 +275,7 @@ const styles = StyleSheet.create({
   },
   kicker: {
     ...type.label,
-    color: colors.text,
+    color: CAMERA_TEXT,
     opacity: 0.7,
     textTransform: "uppercase",
     textShadowColor: "rgba(0,0,0,0.5)",
@@ -278,18 +284,26 @@ const styles = StyleSheet.create({
   },
   hero: {
     ...type.hero,
-    color: colors.text,
+    color: CAMERA_TEXT,
     textShadowColor: "rgba(0,0,0,0.6)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 8,
   },
   copy: {
     ...type.body,
-    color: colors.text,
+    color: CAMERA_TEXT,
     opacity: 0.85,
     textShadowColor: "rgba(0,0,0,0.5)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 6,
+  },
+  permissionHero: {
+    ...type.hero,
+    color: colors.text,
+  },
+  permissionCopy: {
+    ...type.body,
+    color: colors.textMuted,
   },
   vignetteTop: {
     position: "absolute",
@@ -315,7 +329,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: CORNER,
     height: CORNER,
-    borderColor: colors.text,
+    borderColor: CAMERA_TEXT,
   },
   cornerTL: {
     top: 0,
@@ -355,7 +369,7 @@ const styles = StyleSheet.create({
   },
   holdSteady: {
     ...type.caption,
-    color: colors.text,
+    color: CAMERA_TEXT,
     textAlign: "center",
     opacity: 0.9,
   },
@@ -370,10 +384,10 @@ const styles = StyleSheet.create({
   },
   galleryLabel: {
     ...type.caption,
-    color: colors.text,
-    backgroundColor: colors.glass,
+    color: CAMERA_TEXT,
+    backgroundColor: "rgba(0,0,0,0.45)",
     borderWidth: 1,
-    borderColor: colors.glassBorder,
+    borderColor: "rgba(255,255,255,0.25)",
     overflow: "hidden",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -410,3 +424,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+}

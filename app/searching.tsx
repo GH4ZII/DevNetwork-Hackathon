@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -14,7 +14,8 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ApiError, postScan } from "../lib/api";
 import { session } from "../lib/session";
-import { colors, radii, spacing, type } from "../components/theme";
+import { useTheme } from "../components/ThemeProvider";
+import { radii, spacing, type, type ThemeColors } from "../components/theme";
 
 const STAGES = [
   "Analyzing object",
@@ -25,6 +26,8 @@ const STAGES = [
 export default function SearchingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [stageIndex, setStageIndex] = useState(0);
   const [error, setError] = useState(null);
   const pulse = useSharedValue(0.35);
@@ -131,88 +134,90 @@ export default function SearchingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.canvas,
-    paddingHorizontal: spacing.xl,
-    gap: spacing.xxl,
-  },
-  glow: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 280,
-    backgroundColor: colors.gradientTop,
-  },
-  kicker: {
-    ...type.label,
-    color: colors.accent,
-    textTransform: "uppercase",
-  },
-  iconWrap: {
-    alignSelf: "center",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 96,
-    height: 96,
-  },
-  ring: {
-    position: "absolute",
-    width: 96,
-    height: 96,
-    borderRadius: radii.full,
-    borderWidth: 2,
-    borderColor: colors.accent,
-  },
-  iconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: radii.full,
-    backgroundColor: colors.accentMuted,
-    borderWidth: 1,
-    borderColor: colors.accent,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  stageWrap: {
-    gap: spacing.lg,
-  },
-  stage: {
-    ...type.hero,
-    color: colors.text,
-    fontSize: 28,
-  },
-  bar: {
-    height: 3,
-    width: "100%",
-    borderRadius: radii.full,
-    backgroundColor: colors.accent,
-  },
-  hint: {
-    ...type.body,
-    color: colors.textDim,
-  },
-  errorBlock: {
-    gap: spacing.lg,
-  },
-  error: {
-    ...type.body,
-    color: colors.error,
-  },
-  backBtn: {
-    alignSelf: "flex-start",
-    backgroundColor: colors.glass,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: radii.lg,
-  },
-  backText: {
-    ...type.subtitle,
-    color: colors.text,
-    fontWeight: "600",
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.canvas,
+      paddingHorizontal: spacing.xl,
+      gap: spacing.xxl,
+    },
+    glow: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 280,
+      backgroundColor: colors.gradientTop,
+    },
+    kicker: {
+      ...type.label,
+      color: colors.accent,
+      textTransform: "uppercase",
+    },
+    iconWrap: {
+      alignSelf: "center",
+      alignItems: "center",
+      justifyContent: "center",
+      width: 96,
+      height: 96,
+    },
+    ring: {
+      position: "absolute",
+      width: 96,
+      height: 96,
+      borderRadius: radii.full,
+      borderWidth: 2,
+      borderColor: colors.accent,
+    },
+    iconCircle: {
+      width: 72,
+      height: 72,
+      borderRadius: radii.full,
+      backgroundColor: colors.accentMuted,
+      borderWidth: 1,
+      borderColor: colors.accent,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    stageWrap: {
+      gap: spacing.lg,
+    },
+    stage: {
+      ...type.hero,
+      color: colors.text,
+      fontSize: 28,
+    },
+    bar: {
+      height: 3,
+      width: "100%",
+      borderRadius: radii.full,
+      backgroundColor: colors.accent,
+    },
+    hint: {
+      ...type.body,
+      color: colors.textDim,
+    },
+    errorBlock: {
+      gap: spacing.lg,
+    },
+    error: {
+      ...type.body,
+      color: colors.error,
+    },
+    backBtn: {
+      alignSelf: "flex-start",
+      backgroundColor: colors.glass,
+      borderWidth: 1,
+      borderColor: colors.glassBorder,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      borderRadius: radii.lg,
+    },
+    backText: {
+      ...type.subtitle,
+      color: colors.text,
+      fontWeight: "600",
+    },
+  });
+}

@@ -1,6 +1,29 @@
 import { Platform } from "react-native";
 
-export const colors = {
+export type ThemeMode = "dark" | "light";
+
+export type ThemeColors = {
+  canvas: string;
+  surface: string;
+  surfaceRaised: string;
+  glass: string;
+  glassBorder: string;
+  text: string;
+  textMuted: string;
+  textDim: string;
+  primary: string;
+  primaryText: string;
+  accent: string;
+  accentMuted: string;
+  gradientTop: string;
+  error: string;
+  success: string;
+  overlay: string;
+  shutter: string;
+  shutterRing: string;
+};
+
+export const darkColors: ThemeColors = {
   canvas: "#0A0A0A",
   surface: "#161616",
   surfaceRaised: "#1E1E1E",
@@ -20,6 +43,30 @@ export const colors = {
   shutter: "#FFFFFF",
   shutterRing: "rgba(255,255,255,0.35)",
 };
+
+export const lightColors: ThemeColors = {
+  canvas: "#E6E7EC",
+  surface: "#F0F1F5",
+  surfaceRaised: "#FAFBFD",
+  glass: "rgba(0,0,0,0.05)",
+  glassBorder: "rgba(0,0,0,0.10)",
+  text: "#14151A",
+  textMuted: "#5C5F6A",
+  textDim: "#8B8E99",
+  primary: "#14151A",
+  primaryText: "#F2F3F7",
+  accent: "#4F46E5",
+  accentMuted: "rgba(79,70,229,0.15)",
+  gradientTop: "rgba(0,0,0,0.03)",
+  error: "#D64545",
+  success: "#2F9E6A",
+  overlay: "rgba(0,0,0,0.45)",
+  shutter: "#FFFFFF",
+  shutterRing: "rgba(255,255,255,0.35)",
+};
+
+/** @deprecated Prefer useTheme().colors — kept as dark default for non-React callers */
+export const colors = darkColors;
 
 export const spacing = {
   xs: 4,
