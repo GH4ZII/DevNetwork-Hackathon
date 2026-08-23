@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Image,
   Pressable,
@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Asset } from "expo-asset";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import Animated, {
@@ -26,7 +25,6 @@ import { radii, spacing, type, type ThemeColors } from "../../components/theme";
 import { lightImpact, mediumImpact } from "../../lib/haptics";
 import { session } from "../../lib/session";
 
-const demoShoe = require("../../assets/demo/shoes.jpg");
 const CAMERA_TEXT = "#FFFFFF";
 
 export default function CameraScreen() {
@@ -41,10 +39,6 @@ export default function CameraScreen() {
   const [capturing, setCapturing] = useState(false);
   const [flashOn, setFlashOn] = useState(false);
   const shutterScale = useSharedValue(1);
-
-  useEffect(() => {
-    void Asset.loadAsync([demoShoe]);
-  }, []);
 
   const shutterStyle = useAnimatedStyle(() => ({
     transform: [{ scale: shutterScale.value }],
@@ -97,22 +91,6 @@ export default function CameraScreen() {
     }
   }
 
-  async function useDemoPhoto() {
-    setError(null);
-    try {
-      const [asset] = await Asset.loadAsync(demoShoe);
-      const uri = asset.localUri ?? asset.uri;
-      if (!uri) {
-        setError("Demo photo is missing. Try the camera instead.");
-        return;
-      }
-      session.pendingScanUri = uri;
-      router.push("/searching");
-    } catch {
-      setError("Could not load the demo photo.");
-    }
-  }
-
   function search() {
     if (!imageUri) {
       setError("Take or choose a product photo first.");
@@ -137,13 +115,12 @@ export default function CameraScreen() {
         >
           <Ionicons name="chevron-back" size={22} color={colors.text} />
         </Pressable>
-        <Text style={styles.permissionHero}>What did you find?</Text>
+        <Text style={styles.permissionHero}>Camera access needed</Text>
         <Text style={styles.permissionCopy}>
           RealityLens needs camera access to scan products.
         </Text>
         <PrimaryButton label="Allow camera" onPress={requestPermission} />
         <GlassButton label="Choose from gallery" onPress={pickFromGallery} />
-        <GlassButton label="Use demo photo" onPress={useDemoPhoto} />
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </View>
     );
@@ -161,10 +138,6 @@ export default function CameraScreen() {
         >
           <Ionicons name="chevron-back" size={22} color={CAMERA_TEXT} />
         </Pressable>
-        <View style={[styles.topCopy, { paddingTop: insets.top + spacing.xxxl + spacing.md }]}>
-          <Text style={styles.hero}>Ready to search?</Text>
-          <Text style={styles.copy}>Retake if needed, then search.</Text>
-        </View>
         <View style={[styles.bottomBar, { paddingBottom: insets.bottom + spacing.lg }]}>
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <View style={styles.row}>
@@ -186,15 +159,20 @@ export default function CameraScreen() {
   return (
     <View style={styles.screen}>
       <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
-      <View style={[styles.vignetteTop, { height: insets.top + 120 }]} pointerEvents="none" />
-      <View style={[styles.vignetteBottom, { height: insets.bottom + 180 }]} pointerEvents="none" />
-      <View style={styles.viewfinder} pointerEvents="none">
-        <View style={[styles.corner, styles.cornerTL]} />
-        <View style={[styles.corner, styles.cornerTR]} />
-        <View style={[styles.corner, styles.cornerBL]} />
-        <View style={[styles.corner, styles.cornerBR]} />
+      <View style={[styles.vignetteTop, { height: insets.top + 80 }]} pointerEvents="none" />
+      <View style={[styles.vignetteBottom, { height: insets.bottom + 160 }]} pointerEvents="none" />
+
+      <View style={styles.viewfinderWrap} pointerEvents="none">
+        <View style={styles.viewfinder}>
+          <View style={[styles.corner, styles.cornerTL]} />
+          <View style={[styles.corner, styles.cornerTR]} />
+          <View style={[styles.corner, styles.cornerBL]} />
+          <View style={[styles.corner, styles.cornerBR]} />
+        </View>
       </View>
+
       {flashOn ? <View style={styles.flash} pointerEvents="none" /> : null}
+
       <Pressable
         onPress={goBack}
         style={[styles.backBtn, { top: insets.top + spacing.md }]}
@@ -203,15 +181,10 @@ export default function CameraScreen() {
       >
         <Ionicons name="chevron-back" size={22} color={CAMERA_TEXT} />
       </Pressable>
-      <View style={[styles.topCopy, { paddingTop: insets.top + spacing.xxxl + spacing.md }]}>
-        <Text style={styles.kicker}>RealityLens</Text>
-        <Text style={styles.hero}>What did you find?</Text>
-        <Text style={styles.copy}>Scan a product to find it online.</Text>
-      </View>
+
       <View style={[styles.bottomBar, { paddingBottom: insets.bottom + spacing.xl }]}>
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {capturing ? <Text style={styles.holdSteady}>Hold steady</Text> : null}
-        <GlassButton label="Use demo photo" onPress={useDemoPhoto} compact />
         <View style={styles.controls}>
           <Pressable style={styles.galleryBtn} onPress={pickFromGallery}>
             <Text style={styles.galleryLabel}>Gallery</Text>
@@ -243,185 +216,162 @@ const CORNER_THICK = 2;
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.canvas,
-  },
-  centered: {
-    padding: spacing.xl,
-    gap: spacing.lg,
-    justifyContent: "center",
-  },
-  backBtn: {
-    position: "absolute",
-    left: spacing.xl,
-    zIndex: 10,
-    width: 40,
-    height: 40,
-    borderRadius: radii.full,
-    backgroundColor: "rgba(0,0,0,0.45)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.25)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  backBtnSolid: {
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.glassBorder,
-  },
-  topCopy: {
-    paddingHorizontal: spacing.xl,
-    gap: spacing.sm,
-  },
-  kicker: {
-    ...type.label,
-    color: CAMERA_TEXT,
-    opacity: 0.7,
-    textTransform: "uppercase",
-    textShadowColor: "rgba(0,0,0,0.5)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 6,
-  },
-  hero: {
-    ...type.hero,
-    color: CAMERA_TEXT,
-    textShadowColor: "rgba(0,0,0,0.6)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 8,
-  },
-  copy: {
-    ...type.body,
-    color: CAMERA_TEXT,
-    opacity: 0.85,
-    textShadowColor: "rgba(0,0,0,0.5)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 6,
-  },
-  permissionHero: {
-    ...type.hero,
-    color: colors.text,
-  },
-  permissionCopy: {
-    ...type.body,
-    color: colors.textMuted,
-  },
-  vignetteTop: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: colors.overlay,
-  },
-  vignetteBottom: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: colors.overlay,
-  },
-  viewfinder: {
-    ...StyleSheet.absoluteFillObject,
-    marginHorizontal: spacing.xxl,
-    marginTop: "28%",
-    marginBottom: "32%",
-  },
-  corner: {
-    position: "absolute",
-    width: CORNER,
-    height: CORNER,
-    borderColor: CAMERA_TEXT,
-  },
-  cornerTL: {
-    top: 0,
-    left: 0,
-    borderTopWidth: CORNER_THICK,
-    borderLeftWidth: CORNER_THICK,
-  },
-  cornerTR: {
-    top: 0,
-    right: 0,
-    borderTopWidth: CORNER_THICK,
-    borderRightWidth: CORNER_THICK,
-  },
-  cornerBL: {
-    bottom: 0,
-    left: 0,
-    borderBottomWidth: CORNER_THICK,
-    borderLeftWidth: CORNER_THICK,
-  },
-  cornerBR: {
-    bottom: 0,
-    right: 0,
-    borderBottomWidth: CORNER_THICK,
-    borderRightWidth: CORNER_THICK,
-  },
-  flash: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255,255,255,0.55)",
-  },
-  bottomBar: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: spacing.xl,
-    gap: spacing.md,
-  },
-  holdSteady: {
-    ...type.caption,
-    color: CAMERA_TEXT,
-    textAlign: "center",
-    opacity: 0.9,
-  },
-  controls: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  galleryBtn: {
-    width: 72,
-    alignItems: "center",
-  },
-  galleryLabel: {
-    ...type.caption,
-    color: CAMERA_TEXT,
-    backgroundColor: "rgba(0,0,0,0.45)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.25)",
-    overflow: "hidden",
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.full,
-  },
-  shutterHit: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  shutter: {
-    width: 78,
-    height: 78,
-    borderRadius: radii.full,
-    borderWidth: 4,
-    borderColor: colors.shutterRing,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  shutterInner: {
-    width: 62,
-    height: 62,
-    borderRadius: radii.full,
-    backgroundColor: colors.shutter,
-  },
-  shutterDisabled: { opacity: 0.5 },
-  row: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  flexBtn: { flex: 1 },
-  error: {
-    ...type.caption,
-    color: colors.error,
-    textAlign: "center",
-  },
-});
+    screen: {
+      flex: 1,
+      backgroundColor: colors.canvas,
+    },
+    centered: {
+      padding: spacing.xl,
+      gap: spacing.lg,
+      justifyContent: "center",
+    },
+    backBtn: {
+      position: "absolute",
+      left: spacing.xl,
+      zIndex: 10,
+      width: 40,
+      height: 40,
+      borderRadius: radii.full,
+      backgroundColor: "rgba(0,0,0,0.45)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.25)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    backBtnSolid: {
+      backgroundColor: colors.surfaceRaised,
+      borderColor: colors.glassBorder,
+    },
+    permissionHero: {
+      ...type.hero,
+      color: colors.text,
+    },
+    permissionCopy: {
+      ...type.body,
+      color: colors.textMuted,
+    },
+    vignetteTop: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: colors.overlay,
+    },
+    vignetteBottom: {
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: colors.overlay,
+    },
+    viewfinderWrap: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: spacing.xxl,
+    },
+    viewfinder: {
+      width: "100%",
+      aspectRatio: 3 / 4,
+      maxHeight: "55%",
+    },
+    corner: {
+      position: "absolute",
+      width: CORNER,
+      height: CORNER,
+      borderColor: CAMERA_TEXT,
+    },
+    cornerTL: {
+      top: 0,
+      left: 0,
+      borderTopWidth: CORNER_THICK,
+      borderLeftWidth: CORNER_THICK,
+    },
+    cornerTR: {
+      top: 0,
+      right: 0,
+      borderTopWidth: CORNER_THICK,
+      borderRightWidth: CORNER_THICK,
+    },
+    cornerBL: {
+      bottom: 0,
+      left: 0,
+      borderBottomWidth: CORNER_THICK,
+      borderLeftWidth: CORNER_THICK,
+    },
+    cornerBR: {
+      bottom: 0,
+      right: 0,
+      borderBottomWidth: CORNER_THICK,
+      borderRightWidth: CORNER_THICK,
+    },
+    flash: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: "rgba(255,255,255,0.55)",
+    },
+    bottomBar: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      bottom: 0,
+      paddingHorizontal: spacing.xl,
+      gap: spacing.md,
+    },
+    holdSteady: {
+      ...type.caption,
+      color: CAMERA_TEXT,
+      textAlign: "center",
+      opacity: 0.9,
+    },
+    controls: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    galleryBtn: {
+      width: 72,
+      alignItems: "center",
+    },
+    galleryLabel: {
+      ...type.caption,
+      color: CAMERA_TEXT,
+      backgroundColor: "rgba(0,0,0,0.45)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.25)",
+      overflow: "hidden",
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: radii.full,
+    },
+    shutterHit: {
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    shutter: {
+      width: 78,
+      height: 78,
+      borderRadius: radii.full,
+      borderWidth: 4,
+      borderColor: colors.shutterRing,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    shutterInner: {
+      width: 62,
+      height: 62,
+      borderRadius: radii.full,
+      backgroundColor: colors.shutter,
+    },
+    shutterDisabled: { opacity: 0.5 },
+    row: {
+      flexDirection: "row",
+      gap: spacing.md,
+    },
+    flexBtn: { flex: 1 },
+    error: {
+      ...type.caption,
+      color: colors.error,
+      textAlign: "center",
+    },
+  });
 }

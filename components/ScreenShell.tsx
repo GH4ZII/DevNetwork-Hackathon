@@ -49,6 +49,7 @@ export function ScreenShell({
   return (
     <View style={[styles.root, style]}>
       <View style={styles.glow} pointerEvents="none" />
+      <View style={styles.glowOrb} pointerEvents="none" />
       {scroll ? (
         <ScrollView
           style={styles.scroll}
@@ -75,8 +76,18 @@ function createStyles(colors: ThemeColors) {
       top: 0,
       left: 0,
       right: 0,
-      height: 280,
+      height: 320,
       backgroundColor: colors.gradientTop,
+    },
+    glowOrb: {
+      position: "absolute",
+      top: -40,
+      right: -60,
+      width: 220,
+      height: 220,
+      borderRadius: 110,
+      backgroundColor: colors.accentMuted,
+      opacity: 0.7,
     },
     gradient: {
       flex: 1,
