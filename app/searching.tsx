@@ -59,11 +59,13 @@ export default function SearchingScreen() {
         router.replace(`/scan/${scan.scanId}`);
       } catch (err) {
         if (!cancelled) {
-          setError(
+          const message =
             err instanceof ApiError
               ? err.message
-              : "Search failed. Check that the server is running, then try again.",
-          );
+              : err instanceof Error
+                ? err.message
+                : "Search failed. Check that the server is running, then try again.";
+          setError(message);
         }
       }
     })();

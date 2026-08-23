@@ -8,8 +8,10 @@ import {
   View,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ApiError, getTryOn } from "../../lib/api";
+import { successNotify } from "../../lib/haptics";
 import { openExternalUrl } from "../../lib/openUrl";
 import { session } from "../../lib/session";
 import { BeforeAfterSlider } from "../../components/BeforeAfterSlider";
@@ -45,6 +47,10 @@ export default function ResultScreen() {
       });
   }, [id, resultUrl]);
 
+  useEffect(() => {
+    if (resultUrl) successNotify();
+  }, [resultUrl]);
+
   if (error) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
@@ -69,7 +75,7 @@ export default function ResultScreen() {
 
   return (
     <View style={[styles.screen, { paddingBottom: insets.bottom + spacing.lg }]}>
-      <View style={styles.sliderArea}>
+      <Animated.View entering={FadeIn.duration(400)} style={styles.sliderArea}>
         {userUri ? (
           <BeforeAfterSlider beforeUri={userUri} afterUri={resultUrl} />
         ) : (
@@ -81,7 +87,7 @@ export default function ResultScreen() {
             />
           </View>
         )}
-      </View>
+      </Animated.View>
 
       <View style={styles.bottom}>
         <Text style={styles.caption}>Your look</Text>

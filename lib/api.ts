@@ -109,14 +109,31 @@ async function parseJson<T>(response: Response): Promise<T> {
 
 const CLIENT_TIMEOUT_MS = 60_000;
 
+function abortAfter(ms: number): AbortSignal {
+  if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
+    return AbortSignal.timeout(ms);
+  }
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
+function mergeSignals(
+  a: AbortSignal | undefined,
+  b: AbortSignal,
+): AbortSignal {
+  if (!a) return b;
+  if (typeof AbortSignal !== "undefined" && typeof AbortSignal.any === "function") {
+    return AbortSignal.any([a, b]);
+  }
+  return b;
+}
+
 async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   const bases = apiBaseUrls();
   let lastError: ApiError | undefined;
-  const timeoutSignal = AbortSignal.timeout(CLIENT_TIMEOUT_MS);
-  const signal =
-    init?.signal && typeof AbortSignal.any === "function"
-      ? AbortSignal.any([init.signal, timeoutSignal])
-      : timeoutSignal;
+  const timeoutSignal = abortAfter(CLIENT_TIMEOUT_MS);
+  const signal = mergeSignals(init?.signal ?? undefined, timeoutSignal);
 
   for (const base of bases) {
     try {

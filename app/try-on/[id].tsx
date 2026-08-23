@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { Asset } from "expo-asset";
 import * as ImagePicker from "expo-image-picker";
 import { ApiError, getScan, getTryOn, postTryOn } from "../../lib/api";
 import { session } from "../../lib/session";
@@ -16,6 +17,8 @@ import { GlassButton } from "../../components/GlassButton";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { colors, radii, spacing, type } from "../../components/theme";
 import type { ProductCategory, ScanResult } from "../../types/realitylens";
+
+const demoSelfie = require("../../assets/demo/selfie.jpg");
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -105,6 +108,10 @@ export default function TryOnScreen() {
   }, []);
 
   useEffect(() => {
+    void Asset.loadAsync([demoSelfie]);
+  }, []);
+
+  useEffect(() => {
     if (!id) return;
     getScan(id)
       .then((scan) => {
@@ -115,6 +122,21 @@ export default function TryOnScreen() {
       })
       .catch(() => undefined);
   }, [id]);
+
+  async function useDemoSelfie() {
+    setError(null);
+    try {
+      const [asset] = await Asset.loadAsync(demoSelfie);
+      const uri = asset.localUri ?? asset.uri;
+      if (!uri) {
+        setError("Demo selfie is missing. Take or pick a photo instead.");
+        return;
+      }
+      setUserUri(uri);
+    } catch {
+      setError("Could not load the demo selfie.");
+    }
+  }
 
   async function pick(fromCamera: boolean) {
     setError(null);
@@ -239,6 +261,11 @@ export default function TryOnScreen() {
         <GlassButton
           label="Choose from gallery"
           onPress={() => pick(false)}
+          disabled={busy}
+        />
+        <GlassButton
+          label="Use demo selfie"
+          onPress={useDemoSelfie}
           disabled={busy}
         />
         <PrimaryButton

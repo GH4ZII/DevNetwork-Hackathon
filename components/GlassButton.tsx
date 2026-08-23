@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, ViewStyle } from "react-native";
+import { lightImpact } from "../lib/haptics";
 import { colors, radii, spacing, type } from "./theme";
 
 type Props = {
@@ -12,12 +13,16 @@ type Props = {
 export function GlassButton({ label, onPress, disabled, style, compact }: Props) {
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        lightImpact();
+        onPress();
+      }}
       disabled={disabled}
-      style={[
+      style={({ pressed }) => [
         styles.button,
         compact && styles.compact,
         disabled && styles.disabled,
+        pressed && !disabled && styles.pressed,
         style,
       ]}
     >
@@ -42,6 +47,10 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
+  },
+  pressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
   },
   disabled: { opacity: 0.45 },
   label: {

@@ -21,7 +21,8 @@
           "cameraPermission": "Allow RealityLens to take product and try-on photos.",
           "photosPermission": "Allow RealityLens to pick product and try-on photos."
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "ios": {
       "supportsTablet": true,
@@ -31,7 +32,9 @@
       }
     },
     "android": {
-      "permissions": ["CAMERA"],
+      "permissions": [
+        "CAMERA"
+      ],
       "usesCleartextTraffic": true
     },
     "experiments": {

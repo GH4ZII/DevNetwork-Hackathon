@@ -77,14 +77,14 @@ Priority:
 
 ## Phase 5 — Demo polish
 
-- transitions
-- microinteractions
-- before/after slider
-- native camera polish
-- device testing on a real phone
-- fast demo path
-- preload demo-safe assets if necessary
-- record final video
+- [x] transitions
+- [x] microinteractions
+- [x] before/after slider
+- [x] native camera polish
+- [ ] device testing on a real phone — see [demo-day.md](./demo-day.md)
+- [x] fast demo path
+- [x] preload demo-safe assets if necessary
+- [ ] record final video — see [demo-day.md](./demo-day.md)
 
 ## Demo reliability strategy
 

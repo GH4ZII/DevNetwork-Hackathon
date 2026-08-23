@@ -78,10 +78,20 @@ Never expose vendor keys as `EXPO_PUBLIC_*`. Never commit `.env`.
 The product is designed around a 30–60 second demo:
 
 1. Open RealityLens on a phone.
-2. Photograph a real pair of shoes, a watch, a jacket, or a bag.
+2. Photograph a real pair of shoes, a watch, a jacket, or a bag — or tap **Use demo photo**.
 3. Review the best visual match and live prices.
-4. Tap **Try On** and take or pick a photo of yourself.
+4. Tap **Try On** and take a photo, pick from gallery, or tap **Use demo selfie**.
 5. Reveal the before/after result, then open a merchant link.
+
+### Demo day layers
+
+| Layer | When to use | How |
+|-------|-------------|-----|
+| **1 — Live** | Best for the talk | Scan a real product with the camera |
+| **2 — Known assets** | Fast, reliable backup | **Use demo photo** → **Use demo selfie** |
+| **3 — Fixtures** | APIs down / no credits | `USE_FIXTURES=1` in `.env`, restart server |
+
+Full operator checklist: [`docs/demo-day.md`](./docs/demo-day.md).
 
 ## Scope
 

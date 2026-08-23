@@ -14,12 +14,14 @@ export default function RootLayout() {
           headerTintColor: colors.text,
           headerTitleStyle: { fontWeight: "700" },
           headerShadowVisible: false,
+          headerBackTitleVisible: false,
           contentStyle: { backgroundColor: colors.canvas },
+          animation: "fade_from_bottom",
         }}
       >
         <Stack.Screen
           name="index"
-          options={{ headerShown: false, title: "Scan" }}
+          options={{ headerShown: false, title: "Scan", animation: "fade" }}
         />
         <Stack.Screen
           name="searching"

@@ -30,6 +30,7 @@ Alternative pitch:
 | [UX](./ux.md) | States, visual direction, screens |
 | [Setup](./setup.md) | Environment variables and repo structure |
 | [Build plan](./build-plan.md) | Phases, demo reliability, next tasks |
+| [Demo day](./demo-day.md) | Operator checklist for live / demo / fixture layers |
 | [Hackathon](./hackathon.md) | Metrics, submission story, demo script, judging |
 | [Risks](./risks.md) | Risks, definition of done, product statement |
 

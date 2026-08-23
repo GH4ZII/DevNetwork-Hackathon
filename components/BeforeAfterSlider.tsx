@@ -1,11 +1,17 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Image, LayoutChangeEvent, StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
+  Easing,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
+  withSequence,
   withSpring,
+  withTiming,
 } from "react-native-reanimated";
+import { lightImpact } from "../lib/haptics";
 import { colors, radii, spacing, type } from "./theme";
 
 type Props = {
@@ -18,16 +24,35 @@ export function BeforeAfterSlider({ beforeUri, afterUri }: Props) {
   const widthSv = useSharedValue(0);
   const position = useSharedValue(0.5);
   const startPos = useSharedValue(0.5);
+  const swept = useRef(false);
+
+  useEffect(() => {
+    if (beforeUri) void Image.prefetch(beforeUri);
+    if (afterUri) void Image.prefetch(afterUri);
+  }, [beforeUri, afterUri]);
 
   function onLayout(e: LayoutChangeEvent) {
     const { width, height } = e.nativeEvent.layout;
     setSize({ width, height });
     widthSv.value = width;
+
+    if (!swept.current && width > 0) {
+      swept.current = true;
+      position.value = 0.2;
+      position.value = withSequence(
+        withTiming(0.8, { duration: 420, easing: Easing.inOut(Easing.cubic) }),
+        withDelay(
+          80,
+          withTiming(0.5, { duration: 400, easing: Easing.inOut(Easing.cubic) }),
+        ),
+      );
+    }
   }
 
   const pan = Gesture.Pan()
     .onBegin(() => {
       startPos.value = position.value;
+      runOnJS(lightImpact)();
     })
     .onUpdate((e) => {
       "worklet";

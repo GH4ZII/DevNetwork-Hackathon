@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { ApiError, getScan } from "../../lib/api";
 import { session } from "../../lib/session";
 import { GlassButton } from "../../components/GlassButton";
@@ -87,15 +88,20 @@ export default function MatchScreen() {
       contentContainerStyle={styles.screen}
       showsVerticalScrollIndicator={false}
     >
-      {match?.imageUrl ? (
-        <Image source={{ uri: match.imageUrl }} style={styles.hero} />
-      ) : (
-        <View style={[styles.hero, styles.heroEmpty]}>
-          <Text style={styles.meta}>No product image</Text>
-        </View>
-      )}
+      <Animated.View entering={FadeIn.duration(320)}>
+        {match?.imageUrl ? (
+          <Image source={{ uri: match.imageUrl }} style={styles.hero} />
+        ) : (
+          <View style={[styles.hero, styles.heroEmpty]}>
+            <Text style={styles.meta}>No product image</Text>
+          </View>
+        )}
+      </Animated.View>
 
-      <View style={styles.heroBody}>
+      <Animated.View
+        entering={FadeInDown.duration(360).delay(80)}
+        style={styles.heroBody}
+      >
         <MatchLabelBadge label={match?.label} />
         <Text style={styles.title}>{match?.title ?? "Similar products"}</Text>
         {match?.category ? (
@@ -131,7 +137,7 @@ export default function MatchScreen() {
             Try-on is available for shoes, clothing, and watches.
           </Text>
         ) : null}
-      </View>
+      </Animated.View>
 
       <View
         style={styles.deals}
