@@ -1,0 +1,135 @@
+{
+  "scanId": "scan_059d44f4-6a56-4d67-b2ba-eac515b22e56",
+  "bestMatch": {
+    "id": "match_1",
+    "title": "Sneaker Price Data Collection with Web Scraping API | ScrapingAnt",
+    "category": "shoes",
+    "imageUrl": "https://scrapingant.com/blog/img/blog/sneakers-scraping-api.jpg",
+    "source": "ScrapingAnt",
+    "url": "https://scrapingant.com/blog/sneakers-scraping-api",
+    "label": "best_match"
+  },
+  "offers": [
+    {
+      "id": "offer_4",
+      "title": "Clipping Path Services, From $0.7",
+      "merchant": "Photodotedit",
+      "priceText": "$2*",
+      "priceValue": 2,
+      "currency": "$",
+      "inStock": true,
+      "imageUrl": "https://cdn.photodotedit.com/wp-content/uploads/2025/02/shoes-clipping-path.webp",
+      "url": "https://photodotedit.com/clipping-path-services/"
+    },
+    {
+      "id": "offer_6",
+      "title": "Velox HTML Template – Premium eCommerce Template for Athletic and Footwear Stores",
+      "merchant": "TemplateMonster",
+      "priceText": "$24*",
+      "priceValue": 24,
+      "currency": "$",
+      "inStock": true,
+      "imageUrl": "https://s3u.tmimgcdn.com/800x0/u78756826/b24948eac5cfff40f8dee1085c4ddab1.png",
+      "url": "https://www.templatemonster.com/website-templates/velox-html-template-premium-ecommerce-template-for-athletic-and-footwear-stores-555958.html"
+    },
+    {
+      "id": "offer_2",
+      "title": "Red shoes – Jon's Development Store",
+      "merchant": "jharr.is",
+      "priceText": "$100*",
+      "priceValue": 100,
+      "currency": "$",
+      "inStock": true,
+      "imageUrl": "http://shopify.jharr.is/cdn/shop/products/revolt-164_6wVEHfI-unsplash.jpg?v=1602773705",
+      "url": "https://shopify.jharr.is/products/red-shoes"
+    },
+    {
+      "id": "offer_7",
+      "title": "Buy Nike Free RN Flyknit 2018 'Bright Crimson' - 942838 602 | GOAT",
+      "merchant": "GOAT",
+      "priceText": "$1,093*",
+      "priceValue": 1093,
+      "currency": "$",
+      "inStock": true,
+      "rating": 4.7,
+      "reviews": 412,
+      "imageUrl": "https://image.goat.com/375/attachments/product_template_pictures/images/040/850/049/original/942838_602.png.png",
+      "url": "https://www.goat.com/sneakers/free-rn-flyknit-2018-bright-crimson-942838-602"
+    },
+    {
+      "id": "offer_8",
+      "title": "Nike | Shoes | Nike White And Light Grayblue Womens Athletic Shoes | Poshmark",
+      "merchant": "Poshmark",
+      "priceText": "$28*",
+      "priceValue": 28,
+      "currency": "$",
+      "imageUrl": "https://di2ponv0v5otw.cloudfront.net/posts/2026/06/18/6a343f31b6af92d1cecd7469/s_6a343f574a072b87beed6cfa.jpg",
+      "url": "https://poshmark.com/listing/Nike-White-and-Light-GrayBlue-Womens-Athletic-Shoes-6a2878399f034c15b4e69b8a"
+    },
+    {
+      "id": "offer_1",
+      "title": "Prr-Owned Nike Free RN Flyknit Red Platinum Men's Size 9 Running Shoes | eBay",
+      "merchant": "eBay",
+      "imageUrl": "https://i.ebayimg.com/images/g/ckQAAOSw0M9my1LJ/s-l1200.jpg",
+      "url": "https://www.ebay.com/itm/156373755403"
+    },
+    {
+      "id": "offer_3",
+      "title": "Card | Community Components | 21st",
+      "merchant": "21st.dev",
+      "imageUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA==",
+      "url": "https://21st.dev/@ravikatiyar/components/card-7"
+    },
+    {
+      "id": "offer_5",
+      "title": "Coca-Cola with Coffee – Dark – Shop Ready – WooCommerce",
+      "merchant": "QuomodoSoft",
+      "imageUrl": "https://quomodosoft.com/plugins/shopready-demo-one/wp-content/uploads/2022/08/3-600x600.jpg",
+      "url": "https://quomodosoft.com/plugins/shopready-demo-one/product/coca-cola-with-coffee-dark/"
+    },
+    {
+      "id": "offer_9",
+      "title": "Free Run Flyknit 2 - Nike - 880843 404 - grey/navy blue | Flight Club",
+      "merchant": "Flight Club",
+      "imageUrl": "https://cdn.flightclub.com/TEMPLATE/214697/1.jpg?w=3840",
+      "url": "https://www.flightclub.com/free-run-flyknit-2-880843-404"
+    },
+    {
+      "id": "offer_10",
+      "title": "Nike Men's Free RN Flyknit 2017 Running Shoe",
+      "merchant": "Tiendamia",
+      "imageUrl": "https://m.media-amazon.com/images/I/41lbDqlwEOL.jpg",
+      "url": "https://tiendamia.com/producto?amz=B000MZDLB8&amp;clearcache=refresh"
+    },
+    {
+      "id": "offer_11",
+      "title": "Nike Train Force Flyknit Men's 9 Neon Hi Top Running Training Shoes 833275-664 | eBay",
+      "merchant": "eBay",
+      "imageUrl": "https://i.ebayimg.com/images/g/Ax0AAOSwPQZoMZ6k/s-l500.jpg",
+      "url": "https://www.ebay.com/itm/186808281531"
+    },
+    {
+      "id": "offer_12",
+      "title": "Nike 4.0 Mens Running Shoes - Nike Free 4.0 V3 Grey Red Mens Running Shoes",
+      "merchant": "carole-burdet.ch",
+      "imageUrl": "https://i5.walmartimages.com/asr/1d3fc969-e1a1-468e-8f2e-526622d53916_1.4e26775685be597baca52cccff265d42.jpeg?odnHeight=768&odnWidth=768&odnBg=FFFFFF",
+      "url": "https://www.carole-burdet.ch/page/349649414/"
+    },
+    {
+      "id": "offer_13",
+      "title": "Shoe Sites Like Zappos New Arrivals",
+      "merchant": "ratishomemade.com",
+      "imageUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
+      "url": "https://ratishomemade.com/page/445807831/"
+    },
+    {
+      "id": "offer_14",
+      "title": "Nike Ke Shoes Price - Nike Revolution 6 Men s Road Running Shoes",
+      "merchant": "italianhazelnut.com",
+      "imageUrl": "https://www.jagranimages.com/images/newimg/26122022/26_12_2022-best_nike_shoes_in_india_23272173.webp",
+      "url": "https://italianhazelnut.com/tops/368378814/"
+    }
+  ],
+  "tryOnSupported": true,
+  "tryOnCategory": "shoes"
+}

@@ -1,0 +1,23 @@
+{
+  "name": "realitylens",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "phase0": "npm run phase0:serpapi && npm run phase0:perfect",
+    "phase0:serpapi": "tsx scripts/phase0-serpapi.ts",
+    "phase0:perfect": "tsx scripts/phase0-perfect.ts"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "sharp": "^0.34.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}

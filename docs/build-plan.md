@@ -6,14 +6,14 @@
 
 Before building polished UI:
 
-- [ ] obtain SerpApi key
-- [ ] obtain Perfect Corp key
-- [ ] test one direct SerpApi image upload
-- [ ] receive `image_id`
-- [ ] receive Google Lens visual matches
-- [ ] receive Google Lens product data
-- [ ] test one Perfect Corp category manually
-- [ ] generate one successful real try-on image
+- [x] obtain SerpApi key
+- [x] obtain Perfect Corp key
+- [x] test one direct SerpApi image upload
+- [x] receive `image_id`
+- [x] receive Google Lens visual matches
+- [x] receive Google Lens product data
+- [x] test one Perfect Corp category manually
+- [x] generate one successful real try-on image
 
 **Do not start the full UI until both integrations are proven.**
 

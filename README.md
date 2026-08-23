@@ -31,15 +31,31 @@ The app never talks to SerpApi or Perfect Corp directly.
 
 ## Getting started
 
+Phase 0 proves SerpApi and Perfect Corp **before** any UI.
+
 ```bash
 npm install
 cp .env.example .env
-npx expo start
 ```
 
-Open the project in **Expo Go** on a phone, or run an iOS/Android simulator.
+Add keys to `.env`:
 
-Start the API server separately so scan and try-on requests can be proxied.
+1. [SerpApi signup](https://serpapi.com/users/sign_up) → `SERPAPI_API_KEY`
+2. [YouCam / Perfect Corp API keys](https://yce.makeupar.com/api-console/en/api-keys/) → `PERFECT_CORP_API_KEY`
+
+Then:
+
+```bash
+npm run phase0:serpapi
+```
+
+For shoes try-on, put a clear head-to-chest selfie at `assets/demo/selfie.jpg` (gitignored), then:
+
+```bash
+npm run phase0:perfect -- male
+```
+
+Successful runs write redacted JSON under `fixtures/` and a try-on image at `assets/demo/try-on-result.jpg`. Do not start the Expo UI until both scripts pass.
 
 ### Environment variables
 
@@ -50,6 +66,7 @@ EXPO_PUBLIC_API_URL=
 # Server
 SERPAPI_API_KEY=
 PERFECT_CORP_API_KEY=
+PERFECT_CORP_API_BASE=https://yce-api-01.makeupar.com
 
 # Only if temporary image hosting is required
 CLOUDINARY_CLOUD_NAME=

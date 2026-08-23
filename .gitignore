@@ -24,6 +24,10 @@ ios/
 .env.*
 !.env.example
 
+# Personal / generated demo assets
+assets/demo/selfie.*
+assets/demo/try-on-result.*
+
 # Debug / logs
 npm-debug.log*
 yarn-debug.log*
