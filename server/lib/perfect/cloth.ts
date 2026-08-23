@@ -1,4 +1,5 @@
 import { basename } from "node:path";
+import { fetchWithTimeout, withRetry } from "../http/retry.ts";
 import { perfectRequest } from "./client.ts";
 
 export type GarmentCategory =
@@ -73,11 +74,19 @@ export async function uploadClothFile(
     headers.set("Content-Type", contentType);
   }
 
-  const put = await fetch(request.url, {
-    method: request.method ?? "PUT",
-    headers,
-    body: new Uint8Array(file),
-  });
+  const put = await withRetry(
+    () =>
+      fetchWithTimeout(
+        request.url!,
+        {
+          method: request.method ?? "PUT",
+          headers,
+          body: new Uint8Array(file),
+        },
+        45_000,
+      ),
+    { policy: "network" },
+  );
 
   if (!put.ok) {
     const detail = await put.text();
@@ -103,14 +112,20 @@ export async function createClothTask(
     garmentCategory: GarmentCategory;
   },
 ): Promise<string> {
-  const created = (await perfectRequest(baseUrl, apiKey, "/s2s/v2.0/task/cloth-v4", {
-    method: "POST",
-    body: JSON.stringify({
-      src_file_id: input.srcFileId,
-      ref_file_id: input.refFileId,
-      garment_category: input.garmentCategory,
-    }),
-  })) as TaskCreateResponse;
+  const created = (await perfectRequest(
+    baseUrl,
+    apiKey,
+    "/s2s/v2.0/task/cloth-v4",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        src_file_id: input.srcFileId,
+        ref_file_id: input.refFileId,
+        garment_category: input.garmentCategory,
+      }),
+    },
+    { policy: "network" },
+  )) as TaskCreateResponse;
 
   const taskId = created.data?.task_id;
   if (!taskId) {
@@ -128,6 +143,8 @@ export async function getClothTask(
     baseUrl,
     apiKey,
     `/s2s/v2.0/task/cloth-v4/${encodeURIComponent(taskId)}`,
+    {},
+    { policy: "full" },
   )) as ClothTaskStatus;
 }
 

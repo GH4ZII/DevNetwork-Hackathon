@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -60,6 +60,13 @@ export default function TryOnScreen() {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState(null);
   const [error, setError] = useState(null);
+  const generateEpoch = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      generateEpoch.current += 1;
+    };
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -101,6 +108,7 @@ export default function TryOnScreen() {
       setError("Take or pick a photo of yourself first.");
       return;
     }
+    const epoch = ++generateEpoch.current;
     setBusy(true);
     setError(null);
     setStatus("Uploading…");
@@ -111,11 +119,21 @@ export default function TryOnScreen() {
         productImageUrl,
         gender: "male",
       });
+      if (epoch !== generateEpoch.current) return;
       if (!started.jobId) {
         throw new ApiError("Try-on did not return a job id.");
       }
+
+      if (started.status === "completed" && started.resultImageUrl) {
+        session.lastUserImageUri = userUri;
+        session.lastResultImageUrl = started.resultImageUrl;
+        router.push(`/result/${started.jobId}`);
+        return;
+      }
+
       setStatus("Generating…");
       for (let i = 0; i < 40; i += 1) {
+        if (epoch !== generateEpoch.current) return;
         const current = await getTryOn(started.jobId);
         if (current.status === "completed" && current.resultImageUrl) {
           session.lastUserImageUri = userUri;
@@ -124,20 +142,25 @@ export default function TryOnScreen() {
           return;
         }
         if (current.status === "error") {
-          throw new ApiError("Generation failed. Try a clearer photo.");
+          throw new ApiError(
+            current.error || "Generation failed. Try a clearer photo.",
+          );
         }
         await sleep(3000);
       }
       throw new ApiError("This is taking too long. Try again.");
     } catch (err) {
+      if (epoch !== generateEpoch.current) return;
       setError(
         err instanceof ApiError
           ? err.message
           : "Something went wrong. Please try again.",
       );
     } finally {
-      setBusy(false);
-      setStatus(null);
+      if (epoch === generateEpoch.current) {
+        setBusy(false);
+        setStatus(null);
+      }
     }
   }
 
@@ -197,7 +220,18 @@ export default function TryOnScreen() {
           <Text style={styles.status}>{status}</Text>
         </View>
       ) : null}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? (
+        <View style={styles.errorBlock}>
+          <Text style={styles.error}>{error}</Text>
+          {userUri ? (
+            <GlassButton
+              label="Retry try-on"
+              onPress={generate}
+              disabled={busy}
+            />
+          ) : null}
+        </View>
+      ) : null}
     </ScrollView>
   );
 }
@@ -281,5 +315,8 @@ const styles = StyleSheet.create({
   error: {
     ...type.body,
     color: colors.error,
+  },
+  errorBlock: {
+    gap: spacing.md,
   },
 });

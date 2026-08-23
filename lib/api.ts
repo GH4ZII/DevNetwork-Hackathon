@@ -107,13 +107,20 @@ async function parseJson<T>(response: Response): Promise<T> {
   return body as T;
 }
 
+const CLIENT_TIMEOUT_MS = 60_000;
+
 async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   const bases = apiBaseUrls();
   let lastError: ApiError | undefined;
+  const timeoutSignal = AbortSignal.timeout(CLIENT_TIMEOUT_MS);
+  const signal =
+    init?.signal && typeof AbortSignal.any === "function"
+      ? AbortSignal.any([init.signal, timeoutSignal])
+      : timeoutSignal;
 
   for (const base of bases) {
     try {
-      const response = await fetch(`${base}${path}`, init);
+      const response = await fetch(`${base}${path}`, { ...init, signal });
       const contentType = response.headers.get("content-type") ?? "";
       if (!contentType.includes("application/json")) {
         lastError = new ApiError(
@@ -122,9 +129,14 @@ async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
         continue;
       }
       return response;
-    } catch {
+    } catch (err) {
+      const timedOut =
+        err instanceof Error &&
+        (err.name === "TimeoutError" || err.name === "AbortError");
       lastError = new ApiError(
-        `Could not reach the API at ${base}. Keep npm run server running.`,
+        timedOut
+          ? "The request timed out. Try again or check that the server is running."
+          : `Could not reach the API at ${base}. Keep npm run server running.`,
       );
     }
   }

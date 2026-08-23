@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
@@ -16,6 +15,7 @@ import { MatchLabelBadge } from "../../components/MatchLabelBadge";
 import { MerchantCard } from "../../components/MerchantCard";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { PriceFrom } from "../../components/PriceFrom";
+import { MatchScreenSkeleton } from "../../components/Skeleton";
 import {
   colors,
   formatCategory,
@@ -42,7 +42,7 @@ export default function MatchScreen() {
       .catch((err) => {
         setError(
           err instanceof ApiError
-            ? "We couldn't load this match. Try scanning again."
+            ? err.message
             : "Could not load scan.",
         );
       });
@@ -58,17 +58,27 @@ export default function MatchScreen() {
   }
 
   if (!scan) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator color={colors.text} />
-      </View>
-    );
+    return <MatchScreenSkeleton />;
   }
 
   const match = scan.bestMatch;
+  const empty = !match && scan.offers.length === 0;
 
   function viewDeals() {
     scrollRef.current?.scrollTo({ y: Math.max(0, dealsY - 12), animated: true });
+  }
+
+  if (empty) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.emptyTitle}>No product found</Text>
+        <Text style={styles.emptyCopy}>
+          We couldn't match this photo to a product. Try a clearer shot of the
+          item with good lighting.
+        </Text>
+        <GlassButton label="Scan again" onPress={() => router.replace("/")} />
+      </View>
+    );
   }
 
   return (
@@ -87,7 +97,7 @@ export default function MatchScreen() {
 
       <View style={styles.heroBody}>
         <MatchLabelBadge label={match?.label} />
-        <Text style={styles.title}>{match?.title ?? "No match found"}</Text>
+        <Text style={styles.title}>{match?.title ?? "Similar products"}</Text>
         {match?.category ? (
           <Text style={styles.category}>{formatCategory(match.category)}</Text>
         ) : null}
@@ -95,7 +105,7 @@ export default function MatchScreen() {
 
         {!match ? (
           <Text style={styles.meta}>
-            We couldn't identify this product. Try a clearer photo.
+            No clear visual match — browse shopping results below.
           </Text>
         ) : null}
 
@@ -152,6 +162,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.canvas,
     padding: spacing.xl,
     gap: spacing.lg,
+  },
+  emptyTitle: {
+    ...type.title,
+    color: colors.text,
+    textAlign: "center",
+  },
+  emptyCopy: {
+    ...type.body,
+    color: colors.textMuted,
+    textAlign: "center",
   },
   hero: {
     width: "100%",

@@ -1,10 +1,22 @@
+import { fetchWithTimeout, withRetry } from "../http/retry.ts";
+
+const DOWNLOAD_TIMEOUT_MS = 30_000;
+
 export async function downloadImage(url: string): Promise<Buffer> {
-  const response = await fetch(url, {
-    headers: {
-      Accept: "image/*,*/*",
-      "User-Agent": "RealityLens/0.1",
-    },
-  });
+  const response = await withRetry(
+    () =>
+      fetchWithTimeout(
+        url,
+        {
+          headers: {
+            Accept: "image/*,*/*",
+            "User-Agent": "RealityLens/0.1",
+          },
+        },
+        DOWNLOAD_TIMEOUT_MS,
+      ),
+    { policy: "full" },
+  );
 
   if (!response.ok) {
     throw new Error("Could not download the product image for try-on.");

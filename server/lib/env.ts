@@ -37,3 +37,9 @@ export function getPerfectCorpBase(): string {
     "https://yce-api-01.makeupar.com"
   );
 }
+
+/** Dev-only: serve handcrafted fixtures and skip SerpApi / Perfect Corp. */
+export function isFixtureMode(): boolean {
+  const value = process.env.USE_FIXTURES?.trim().toLowerCase();
+  return value === "1" || value === "true" || value === "yes";
+}

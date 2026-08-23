@@ -7,12 +7,16 @@ export function normalizeScanResult(
   visual: GoogleLensResponse,
   products: GoogleLensResponse,
 ): ScanResult {
-  const visualMatches = visual.visual_matches ?? [];
-  const productMatches = products.visual_matches ?? [];
+  const visualMatches = Array.isArray(visual.visual_matches)
+    ? visual.visual_matches
+    : [];
+  const productMatches = Array.isArray(products.visual_matches)
+    ? products.visual_matches
+    : [];
   const bestRaw = visualMatches[0] ?? productMatches[0];
   const categoryText = [
-    ...visualMatches.slice(0, 5).map((match) => match.title ?? ""),
-    ...productMatches.slice(0, 5).map((match) => match.title ?? ""),
+    ...visualMatches.slice(0, 5).map((match) => safeTitle(match.title)),
+    ...productMatches.slice(0, 5).map((match) => safeTitle(match.title)),
   ].join(" ");
   const category = classifyCategory(categoryText);
   const bestMatch = bestRaw ? toProductMatch(bestRaw, category) : null;
@@ -20,7 +24,8 @@ export function normalizeScanResult(
     .map(toOffer)
     .filter((offer): offer is Offer => offer !== null)
     .sort(compareOffers);
-  const supported = isTryOnSupported(category);
+  const hasProduct = Boolean(bestMatch || offers.length > 0);
+  const supported = hasProduct && isTryOnSupported(category);
   const garmentCategory = supported
     ? toGarmentCategory(category, categoryText) ?? undefined
     : undefined;
@@ -35,38 +40,49 @@ export function normalizeScanResult(
   };
 }
 
+function safeTitle(title: unknown): string {
+  return typeof title === "string" ? title : "";
+}
+
 function toProductMatch(
   match: LensVisualMatch,
   category: ScanResult["tryOnCategory"],
 ): ProductMatch {
   return {
-    id: `match_${match.position ?? 1}`,
-    title: match.title?.trim() || "Unknown product",
+    id: `match_${typeof match.position === "number" ? match.position : 1}`,
+    title: safeTitle(match.title).trim() || "Unknown product",
     category: category ?? "other",
-    imageUrl: match.image ?? match.thumbnail,
-    source: match.source,
-    url: match.link,
+    imageUrl: asUrl(match.image) ?? asUrl(match.thumbnail),
+    source: typeof match.source === "string" ? match.source : undefined,
+    url: asUrl(match.link),
     label: match.position === 1 ? "best_match" : "similar",
   };
 }
 
 function toOffer(match: LensVisualMatch): Offer | null {
-  if (!match.link) return null;
+  const url = asUrl(match.link);
+  if (!url) return null;
 
   const price = parsePrice(match);
   return {
-    id: `offer_${match.position ?? randomUUID()}`,
-    title: match.title?.trim() || "Untitled offer",
-    merchant: match.source,
+    id: `offer_${typeof match.position === "number" ? match.position : randomUUID()}`,
+    title: safeTitle(match.title).trim() || "Untitled offer",
+    merchant: typeof match.source === "string" ? match.source : undefined,
     priceText: price.text,
     priceValue: price.value,
     currency: price.currency,
-    inStock: match.in_stock,
-    rating: match.rating,
-    reviews: match.reviews,
-    imageUrl: match.image ?? match.thumbnail,
-    url: match.link,
+    inStock: typeof match.in_stock === "boolean" ? match.in_stock : undefined,
+    rating: typeof match.rating === "number" ? match.rating : undefined,
+    reviews: typeof match.reviews === "number" ? match.reviews : undefined,
+    imageUrl: asUrl(match.image) ?? asUrl(match.thumbnail),
+    url,
   };
+}
+
+function asUrl(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed || undefined;
 }
 
 function parsePrice(match: LensVisualMatch): {
@@ -76,20 +92,36 @@ function parsePrice(match: LensVisualMatch): {
 } {
   if (typeof match.price === "string") {
     return {
-      text: match.price,
-      value: match.extracted_price,
+      text: match.price.trim() || undefined,
+      value:
+        typeof match.extracted_price === "number"
+          ? match.extracted_price
+          : undefined,
     };
   }
 
   if (match.price && typeof match.price === "object") {
-    return {
-      text: match.price.value,
-      value: match.price.extracted_value,
-      currency: match.price.currency,
-    };
+    const text =
+      typeof match.price.value === "string" ? match.price.value.trim() : undefined;
+    const value =
+      typeof match.price.extracted_value === "number"
+        ? match.price.extracted_value
+        : typeof match.extracted_price === "number"
+          ? match.extracted_price
+          : undefined;
+    const currency =
+      typeof match.price.currency === "string"
+        ? match.price.currency
+        : undefined;
+    return { text: text || undefined, value, currency };
   }
 
-  return { value: match.extracted_price };
+  return {
+    value:
+      typeof match.extracted_price === "number"
+        ? match.extracted_price
+        : undefined,
+  };
 }
 
 function compareOffers(a: Offer, b: Offer): number {

@@ -1,4 +1,5 @@
 import { serpApiGet } from "./client.ts";
+import { coerceLensResponse } from "../validate.ts";
 
 export type GoogleLensType =
   | "all"
@@ -41,12 +42,13 @@ export async function searchGoogleLens(
   imageId: string,
   type: GoogleLensType,
 ): Promise<GoogleLensResponse> {
-  const body = (await serpApiGet({
+  const raw = await serpApiGet({
     engine: "google_lens",
     image_id: imageId,
     type,
     api_key: apiKey,
-  })) as GoogleLensResponse;
+  });
+  const body = coerceLensResponse(raw);
 
   if (!body.visual_matches?.length && body.shopping_results?.length) {
     body.visual_matches = body.shopping_results;

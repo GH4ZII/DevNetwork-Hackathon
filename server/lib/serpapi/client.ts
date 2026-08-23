@@ -1,3 +1,7 @@
+import { fetchWithTimeout, withRetry } from "../http/retry.ts";
+
+const SERPAPI_TIMEOUT_MS = 30_000;
+
 export class SerpApiError extends Error {
   constructor(
     message: string,
@@ -13,11 +17,17 @@ export async function serpApiPostForm(
   path: string,
   form: FormData,
 ): Promise<unknown> {
-  const response = await fetch(`https://serpapi.com${path}`, {
-    method: "POST",
-    body: form,
-  });
-  return parseJson(response);
+  return withRetry(
+    async () => {
+      const response = await fetchWithTimeout(
+        `https://serpapi.com${path}`,
+        { method: "POST", body: form },
+        SERPAPI_TIMEOUT_MS,
+      );
+      return parseJson(response);
+    },
+    { policy: "full" },
+  );
 }
 
 export async function serpApiGet(
@@ -28,8 +38,13 @@ export async function serpApiGet(
     url.searchParams.set(key, value);
   }
 
-  const response = await fetch(url);
-  return parseJson(response);
+  return withRetry(
+    async () => {
+      const response = await fetchWithTimeout(url.toString(), undefined, SERPAPI_TIMEOUT_MS);
+      return parseJson(response);
+    },
+    { policy: "full" },
+  );
 }
 
 async function parseJson(response: Response): Promise<unknown> {

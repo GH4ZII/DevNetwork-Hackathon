@@ -53,15 +53,17 @@ Build:
 
 Add:
 
-- retries
-- timeouts
-- loading skeletons
-- API validation
-- malformed result handling
-- no-product fallback
-- image resizing
-- caching
-- demo fixtures for development only
+- [x] retries
+- [x] timeouts
+- [x] loading skeletons
+- [x] API validation
+- [x] malformed result handling
+- [x] no-product fallback
+- [x] image resizing
+- [x] caching
+- [x] demo fixtures for development only
+
+Layer 2 (known live demo images): keep 2–3 repeatedly verified photos offline for live demos; do not label fixture mode as live.
 
 ## Phase 4 — Second category
 

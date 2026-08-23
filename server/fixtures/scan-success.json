@@ -1,0 +1,54 @@
+{
+  "scanId": "scan_fixture_success",
+  "bestMatch": {
+    "id": "match_1",
+    "title": "Nike Air Max 95",
+    "category": "shoes",
+    "imageUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800",
+    "source": "Nike",
+    "url": "https://www.nike.com/",
+    "label": "best_match"
+  },
+  "offers": [
+    {
+      "id": "offer_1",
+      "title": "Nike Air Max 95",
+      "merchant": "Nike",
+      "priceText": "$170.00",
+      "priceValue": 170,
+      "currency": "USD",
+      "inStock": true,
+      "rating": 4.7,
+      "reviews": 1284,
+      "imageUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400",
+      "url": "https://www.nike.com/"
+    },
+    {
+      "id": "offer_2",
+      "title": "Air Max 95 Men's Shoes",
+      "merchant": "Foot Locker",
+      "priceText": "$149.99",
+      "priceValue": 149.99,
+      "currency": "USD",
+      "inStock": true,
+      "rating": 4.5,
+      "reviews": 420,
+      "imageUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400",
+      "url": "https://www.footlocker.com/"
+    },
+    {
+      "id": "offer_3",
+      "title": "Nike Air Max 95",
+      "merchant": "JD Sports",
+      "priceText": "$159.00",
+      "priceValue": 159,
+      "currency": "USD",
+      "inStock": false,
+      "imageUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400",
+      "url": "https://www.jdsports.com/"
+    }
+  ],
+  "tryOnSupported": true,
+  "tryOnCategory": "shoes",
+  "garmentCategory": "shoes"
+}

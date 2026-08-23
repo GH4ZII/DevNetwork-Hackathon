@@ -2,7 +2,12 @@ import { randomUUID } from "node:crypto";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { asString, publicError, readUpload } from "../lib/http.ts";
-import { getPerfectCorpBase, getPerfectCorpKey } from "../lib/env.ts";
+import {
+  getPerfectCorpBase,
+  getPerfectCorpKey,
+  isFixtureMode,
+} from "../lib/env.ts";
+import { loadTryOnFixture } from "../lib/fixtures.ts";
 import { prepareForTryOn } from "../lib/image/tryon.ts";
 import { downloadFirstImage } from "../lib/perfect/download.ts";
 import {
@@ -17,6 +22,7 @@ import {
   tryOnHint,
 } from "../lib/category/classify.ts";
 import { getScan, getTryOnJob, saveTryOnJob } from "../lib/store.ts";
+import { assertTryOnResult } from "../lib/validate.ts";
 import type { TryOnResult } from "../../types/realitylens.ts";
 
 export const tryOnRoutes = new Hono();
@@ -44,6 +50,25 @@ tryOnRoutes.post("/api/try-on", async (c) => {
         },
         400,
       );
+    }
+
+    if (isFixtureMode()) {
+      await readUpload(body.userImage, "userImage");
+      const jobId = `tryon_${randomUUID()}`;
+      const result = assertTryOnResult(loadTryOnFixture(jobId));
+      saveTryOnJob({
+        jobId,
+        scanId,
+        taskId: "fixture",
+        result,
+        createdAt: Date.now(),
+        garmentCategory: stored.result.garmentCategory,
+      });
+      return c.json({
+        ...result,
+        garmentCategory: stored.result.garmentCategory,
+        hint: tryOnHint(stored.result.garmentCategory ?? "shoes"),
+      });
     }
 
     const productImageUrls = [
@@ -102,7 +127,7 @@ tryOnRoutes.post("/api/try-on", async (c) => {
     });
 
     return c.json({
-      ...result,
+      ...assertTryOnResult(result),
       garmentCategory,
       hint: tryOnHint(garmentCategory),
     });
@@ -128,6 +153,12 @@ tryOnRoutes.get("/api/try-on/:jobId", async (c) => {
   }
 
   if (stored.result.status !== "processing") {
+    return c.json(assertTryOnResult(stored.result));
+  }
+
+  if (isFixtureMode()) {
+    stored.result = assertTryOnResult(loadTryOnFixture(jobId));
+    saveTryOnJob(stored);
     return c.json(stored.result);
   }
 
@@ -141,12 +172,12 @@ tryOnRoutes.get("/api/try-on/:jobId", async (c) => {
     const resultUrl = status.data?.results?.url;
 
     if (taskStatus === "success" && resultUrl) {
-      stored.result = {
+      stored.result = assertTryOnResult({
         status: "completed",
         jobId,
         resultImageUrl: resultUrl,
         provider: "perfect_corp",
-      };
+      });
       saveTryOnJob(stored);
       return c.json(stored.result);
     }
@@ -158,18 +189,18 @@ tryOnRoutes.get("/api/try-on/:jobId", async (c) => {
           : status.data?.error
             ? JSON.stringify(status.data.error)
             : undefined;
-      stored.result = {
+      stored.result = assertTryOnResult({
         status: "error",
         jobId,
         error: detail
-          ? `Try-on failed (${detail}). Try a clearer full-body photo.`
+          ? `Try-on failed. Try a clearer full-body photo.`
           : "Try-on generation failed. Try another photo.",
-      };
+      });
       saveTryOnJob(stored);
       return c.json(stored.result);
     }
 
-    return c.json(stored.result);
+    return c.json(assertTryOnResult(stored.result));
   } catch (err) {
     console.error("GET /api/try-on/:jobId failed", err);
     return c.json(
@@ -179,5 +210,4 @@ tryOnRoutes.get("/api/try-on/:jobId", async (c) => {
   }
 });
 
-// Expose garment type for TypeScript consumers of the store field
 export type { GarmentCategory };

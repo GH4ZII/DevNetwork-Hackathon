@@ -11,7 +11,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { postScan } from "../lib/api";
+import { ApiError, postScan } from "../lib/api";
 import { session } from "../lib/session";
 import { colors, radii, spacing, type } from "../components/theme";
 
@@ -55,10 +55,15 @@ export default function SearchingScreen() {
         session.pendingScanUri = undefined;
         session.lastScanId = scan.scanId;
         session.lastShopUrl = scan.bestMatch?.url ?? scan.offers[0]?.url;
+        // Empty results still land on the match screen for a dedicated fallback.
         router.replace(`/scan/${scan.scanId}`);
-      } catch {
+      } catch (err) {
         if (!cancelled) {
-          setError("We couldn't find this product. Try another photo.");
+          setError(
+            err instanceof ApiError
+              ? err.message
+              : "Search failed. Check that the server is running, then try again.",
+          );
         }
       }
     })();
