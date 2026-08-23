@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { classifyCategory, isTryOnSupported } from "../category/classify.ts";
+import { classifyCategory, isTryOnSupported, toGarmentCategory } from "../category/classify.ts";
 import type { GoogleLensResponse, LensVisualMatch } from "./lens.ts";
 import type { Offer, ProductMatch, ScanResult } from "../../../types/realitylens.ts";
 
@@ -20,13 +20,18 @@ export function normalizeScanResult(
     .map(toOffer)
     .filter((offer): offer is Offer => offer !== null)
     .sort(compareOffers);
+  const supported = isTryOnSupported(category);
+  const garmentCategory = supported
+    ? toGarmentCategory(category, categoryText) ?? undefined
+    : undefined;
 
   return {
     scanId: `scan_${randomUUID()}`,
     bestMatch,
     offers,
-    tryOnSupported: isTryOnSupported(category),
-    tryOnCategory: isTryOnSupported(category) ? category : undefined,
+    tryOnSupported: supported,
+    tryOnCategory: supported ? category : undefined,
+    garmentCategory,
   };
 }
 

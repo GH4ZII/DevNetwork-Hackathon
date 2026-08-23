@@ -6,11 +6,16 @@ import { getPerfectCorpBase, getPerfectCorpKey } from "../lib/env.ts";
 import { prepareForTryOn } from "../lib/image/tryon.ts";
 import { downloadFirstImage } from "../lib/perfect/download.ts";
 import {
-  createShoesTask,
-  getShoesTask,
-  uploadPerfectFile,
-  type ShoeGender,
-} from "../lib/perfect/shoes.ts";
+  createClothTask,
+  getClothTask,
+  uploadClothFile,
+  type GarmentCategory,
+} from "../lib/perfect/cloth.ts";
+import {
+  isTryOnSupported,
+  toGarmentCategory,
+  tryOnHint,
+} from "../lib/category/classify.ts";
 import { getScan, getTryOnJob, saveTryOnJob } from "../lib/store.ts";
 import type { TryOnResult } from "../../types/realitylens.ts";
 
@@ -31,9 +36,12 @@ tryOnRoutes.post("/api/try-on", async (c) => {
 
     const category =
       stored.result.tryOnCategory ?? stored.result.bestMatch?.category;
-    if (!stored.result.tryOnSupported || category !== "shoes") {
+    if (!category || !stored.result.tryOnSupported || !isTryOnSupported(category)) {
       return c.json(
-        { error: "Try-on is only available for shoes in this version." },
+        {
+          error:
+            "Try-on is available for shoes and clothing. Scan a supported item.",
+        },
         400,
       );
     }
@@ -49,7 +57,20 @@ tryOnRoutes.post("/api/try-on", async (c) => {
       return c.json({ error: "No product image is available for try-on." }, 400);
     }
 
-    const gender = parseGender(body.gender);
+    const garmentText = [
+      stored.result.bestMatch?.title,
+      ...stored.result.offers.slice(0, 5).map((offer) => offer.title),
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const garmentCategory = toGarmentCategory(category, garmentText);
+    if (!garmentCategory) {
+      return c.json(
+        { error: "Could not map this product to a try-on garment type." },
+        400,
+      );
+    }
+
     const userImage = await prepareForTryOn(
       await readUpload(body.userImage, "userImage"),
     );
@@ -60,13 +81,13 @@ tryOnRoutes.post("/api/try-on", async (c) => {
     const baseUrl = getPerfectCorpBase();
     const apiKey = getPerfectCorpKey();
     const [srcFileId, refFileId] = await Promise.all([
-      uploadPerfectFile(baseUrl, apiKey, userImage, "user.jpg"),
-      uploadPerfectFile(baseUrl, apiKey, productImage, "product.jpg"),
+      uploadClothFile(baseUrl, apiKey, userImage, "user.jpg"),
+      uploadClothFile(baseUrl, apiKey, productImage, "product.jpg"),
     ]);
-    const taskId = await createShoesTask(baseUrl, apiKey, {
+    const taskId = await createClothTask(baseUrl, apiKey, {
       srcFileId,
       refFileId,
-      gender,
+      garmentCategory,
     });
 
     const jobId = `tryon_${randomUUID()}`;
@@ -77,9 +98,14 @@ tryOnRoutes.post("/api/try-on", async (c) => {
       taskId,
       result,
       createdAt: Date.now(),
+      garmentCategory,
     });
 
-    return c.json(result);
+    return c.json({
+      ...result,
+      garmentCategory,
+      hint: tryOnHint(garmentCategory),
+    });
   } catch (err) {
     if (err instanceof HTTPException) throw err;
     console.error("POST /api/try-on failed", err);
@@ -106,7 +132,7 @@ tryOnRoutes.get("/api/try-on/:jobId", async (c) => {
   }
 
   try {
-    const status = await getShoesTask(
+    const status = await getClothTask(
       getPerfectCorpBase(),
       getPerfectCorpKey(),
       stored.taskId,
@@ -126,10 +152,18 @@ tryOnRoutes.get("/api/try-on/:jobId", async (c) => {
     }
 
     if (taskStatus === "error") {
+      const detail =
+        typeof status.data?.error === "string"
+          ? status.data.error
+          : status.data?.error
+            ? JSON.stringify(status.data.error)
+            : undefined;
       stored.result = {
         status: "error",
         jobId,
-        error: "Try-on generation failed. Try another photo.",
+        error: detail
+          ? `Try-on failed (${detail}). Try a clearer full-body photo.`
+          : "Try-on generation failed. Try another photo.",
       };
       saveTryOnJob(stored);
       return c.json(stored.result);
@@ -145,6 +179,5 @@ tryOnRoutes.get("/api/try-on/:jobId", async (c) => {
   }
 });
 
-function parseGender(value: unknown): ShoeGender {
-  return asString(value) === "female" ? "female" : "male";
-}
+// Expose garment type for TypeScript consumers of the store field
+export type { GarmentCategory };

@@ -13,6 +13,7 @@ export interface StoredTryOnJob {
   taskId: string;
   result: TryOnResult;
   createdAt: number;
+  garmentCategory?: string;
 }
 
 const scans = new Map<string, StoredScan>();

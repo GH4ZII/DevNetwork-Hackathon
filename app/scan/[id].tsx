@@ -71,7 +71,9 @@ export default function MatchScreen() {
           <Text style={styles.primaryText}>Try On</Text>
         </Pressable>
       ) : (
-        <Text style={styles.meta}>Try-on is only available for shoes in Phase 1.</Text>
+        <Text style={styles.meta}>
+          Try-on is available for shoes and clothing (tops, bottoms, dresses).
+        </Text>
       )}
 
       <Text style={styles.section}>Offers</Text>

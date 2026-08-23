@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -12,17 +13,34 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { ApiError, getScan, getTryOn, postTryOn } from "../../lib/api";
 import { session } from "../../lib/session";
+import type { ScanResult } from "../../types/realitylens";
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function hintFor(garment?: ScanResult["garmentCategory"]): string {
+  switch (garment) {
+    case "shoes":
+      return "Use a full-body photo with your feet visible. Only the shoes will change.";
+    case "lower_body":
+      return "Use a full-body photo with legs visible. Only the bottoms will change.";
+    case "upper_body":
+      return "Use a photo that shows your torso. Only the top (e.g. sweater) will change.";
+    case "full_body":
+      return "Use a full-body photo. The outfit on your photo will be replaced.";
+    default:
+      return "Use a clear full-body photo. Only the scanned item region will change.";
+  }
+}
+
 export default function TryOnScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const [gender, setGender] = useState<"male" | "female">("male");
   const [userUri, setUserUri] = useState<string | null>(null);
   const [productImageUrl, setProductImageUrl] = useState<string | undefined>();
+  const [garmentCategory, setGarmentCategory] =
+    useState<ScanResult["garmentCategory"]>();
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +50,7 @@ export default function TryOnScreen() {
     getScan(id)
       .then((scan) => {
         setProductImageUrl(scan.bestMatch?.imageUrl ?? scan.offers[0]?.imageUrl);
+        setGarmentCategory(scan.garmentCategory);
         session.lastShopUrl = scan.bestMatch?.url ?? scan.offers[0]?.url;
       })
       .catch(() => undefined);
@@ -59,7 +78,7 @@ export default function TryOnScreen() {
 
   async function generate() {
     if (!id || !userUri) {
-      setError("Take or pick a full-body / lower-body photo first.");
+      setError("Take or pick a photo of yourself first.");
       return;
     }
     setBusy(true);
@@ -70,7 +89,7 @@ export default function TryOnScreen() {
         scanId: id,
         userImageUri: userUri,
         productImageUrl,
-        gender,
+        gender: "male",
       });
       if (!started.jobId) {
         throw new ApiError("Try-on did not return a job id.");
@@ -99,29 +118,21 @@ export default function TryOnScreen() {
   }
 
   return (
-    <View style={styles.screen}>
+    <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>You found it. Now wear it.</Text>
-      <Text style={styles.copy}>
-        Use a full-body or lower-body photo with your feet visible.
-      </Text>
-
-      <View style={styles.row}>
-        <Pressable
-          style={[styles.chip, gender === "male" && styles.chipOn]}
-          onPress={() => setGender("male")}
-        >
-          <Text style={styles.chipText}>Male</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.chip, gender === "female" && styles.chipOn]}
-          onPress={() => setGender("female")}
-        >
-          <Text style={styles.chipText}>Female</Text>
-        </Pressable>
-      </View>
+      <Text style={styles.copy}>{hintFor(garmentCategory)}</Text>
+      {garmentCategory ? (
+        <Text style={styles.meta}>Swapping: {garmentCategory.replace("_", " ")}</Text>
+      ) : null}
 
       {userUri ? (
-        <Image source={{ uri: userUri }} style={styles.preview} />
+        <View style={styles.previewFrame}>
+          <Image
+            source={{ uri: userUri }}
+            style={styles.preview}
+            resizeMode="contain"
+          />
+        </View>
       ) : (
         <View style={styles.placeholder}>
           <Text style={styles.meta}>No user photo yet</Text>
@@ -147,27 +158,24 @@ export default function TryOnScreen() {
       </Pressable>
       {status ? <Text style={styles.meta}>{status}</Text> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, padding: 20, gap: 12 },
+  screen: { padding: 20, gap: 12, flexGrow: 1 },
   title: { color: "#fff", fontSize: 24, fontWeight: "700" },
   copy: { color: "#bbb" },
-  row: { flexDirection: "row", gap: 8 },
-  chip: {
-    flex: 1,
-    padding: 12,
+  previewFrame: {
+    width: "100%",
+    height: 420,
     borderRadius: 8,
-    backgroundColor: "#2a2a2a",
-    alignItems: "center",
+    backgroundColor: "#222",
+    overflow: "hidden",
   },
-  chipOn: { backgroundColor: "#555" },
-  chipText: { color: "#fff", fontWeight: "600" },
-  preview: { width: "100%", height: 240, borderRadius: 8, backgroundColor: "#222" },
+  preview: { width: "100%", height: "100%" },
   placeholder: {
-    height: 240,
+    height: 420,
     borderRadius: 8,
     backgroundColor: "#222",
     alignItems: "center",

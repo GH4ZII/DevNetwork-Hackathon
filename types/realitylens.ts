@@ -43,6 +43,13 @@ export interface ScanResult {
   offers: Offer[];
   tryOnSupported: boolean;
   tryOnCategory?: ProductCategory;
+  /** Perfect Corp cloth-v4 region to swap (shoes / upper_body / …). */
+  garmentCategory?:
+    | "full_body"
+    | "lower_body"
+    | "upper_body"
+    | "shoes"
+    | "auto";
 }
 
 export type TryOnStatus = "processing" | "completed" | "error";

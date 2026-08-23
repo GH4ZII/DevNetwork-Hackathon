@@ -55,11 +55,23 @@ export default function ResultScreen() {
       {userUri ? (
         <>
           <Text style={styles.meta}>Before</Text>
-          <Image source={{ uri: userUri }} style={styles.image} />
+          <View style={styles.imageFrame}>
+            <Image
+              source={{ uri: userUri }}
+              style={styles.image}
+              resizeMode="contain"
+            />
+          </View>
         </>
       ) : null}
       <Text style={styles.meta}>After</Text>
-      <Image source={{ uri: resultUrl }} style={styles.image} />
+      <View style={styles.imageFrame}>
+        <Image
+          source={{ uri: resultUrl }}
+          style={styles.image}
+          resizeMode="contain"
+        />
+      </View>
       {shopUrl ? (
         <Pressable style={styles.primary} onPress={() => Linking.openURL(shopUrl)}>
           <Text style={styles.primaryText}>Shop this look</Text>
@@ -74,7 +86,14 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   title: { color: "#fff", fontSize: 24, fontWeight: "700" },
   meta: { color: "#bbb" },
-  image: { width: "100%", height: 280, borderRadius: 8, backgroundColor: "#222" },
+  imageFrame: {
+    width: "100%",
+    height: 420,
+    borderRadius: 8,
+    backgroundColor: "#222",
+    overflow: "hidden",
+  },
+  image: { width: "100%", height: "100%" },
   primary: {
     backgroundColor: "#fff",
     padding: 14,

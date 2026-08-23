@@ -1,4 +1,5 @@
 import type { ProductCategory } from "../../../types/realitylens.ts";
+import type { GarmentCategory } from "../perfect/cloth.ts";
 
 const RULES: Array<{ category: ProductCategory; pattern: RegExp }> = [
   {
@@ -21,7 +22,7 @@ const RULES: Array<{ category: ProductCategory; pattern: RegExp }> = [
   {
     category: "clothes",
     pattern:
-      /\b(shirt|jacket|hoodie|dress|pants|jeans|coat|sweater|tee|t-shirt|blouse|skirt|shorts|suit|outerwear|apparel|clothing)\b/i,
+      /\b(shirt|jacket|hoodie|dress|pants|jeans|coat|sweater|tee|t-shirt|blouse|skirt|shorts|suit|outerwear|apparel|clothing|top|cardigan|vest|pullover|crewneck|polo|trousers|leggings|jumpsuit|romper|gown|overalls?|chino|blazer|parka|windbreaker|sweatshirt)\b/i,
   },
   {
     category: "ring",
@@ -45,8 +46,15 @@ const RULES: Array<{ category: ProductCategory; pattern: RegExp }> = [
   },
 ];
 
-/** Phase 1 implements shoes only. Other categories wait until Phase 4. */
-const TRY_ON_CATEGORIES = new Set<ProductCategory>(["shoes"]);
+/** Categories we can try on via Perfect Corp Clothes (cloth-v4). */
+const TRY_ON_CATEGORIES = new Set<ProductCategory>(["shoes", "clothes"]);
+
+const LOWER_BODY =
+  /\b(pants|jeans|trousers|shorts|skirt|leggings|chinos?|sweatpants|joggers|culottes)\b/i;
+const FULL_BODY =
+  /\b(dress|jumpsuit|romper|suit|tuxedo|gown|overalls?|onesie|bodysuit)\b/i;
+const UPPER_BODY =
+  /\b(shirt|jacket|hoodie|coat|sweater|tee|t-shirt|blouse|top|cardigan|vest|pullover|crewneck|polo|blazer|parka|windbreaker|sweatshirt|tank|camisole|outerwear)\b/i;
 
 export function classifyCategory(text: string): ProductCategory {
   const haystack = text.trim();
@@ -61,4 +69,38 @@ export function classifyCategory(text: string): ProductCategory {
 
 export function isTryOnSupported(category: ProductCategory): boolean {
   return TRY_ON_CATEGORIES.has(category);
+}
+
+/**
+ * Maps RealityLens category + product title text to Perfect Corp
+ * garment_category so only that region is swapped on the user photo.
+ */
+export function toGarmentCategory(
+  category: ProductCategory,
+  text = "",
+): GarmentCategory | null {
+  if (category === "shoes") return "shoes";
+  if (category !== "clothes") return null;
+
+  const haystack = text.trim();
+  if (LOWER_BODY.test(haystack)) return "lower_body";
+  if (FULL_BODY.test(haystack)) return "full_body";
+  if (UPPER_BODY.test(haystack)) return "upper_body";
+  // Ambiguous clothing — let Perfect Corp classify the product image
+  return "auto";
+}
+
+export function tryOnHint(garment: GarmentCategory): string {
+  switch (garment) {
+    case "shoes":
+      return "Use a full-body photo with your feet visible. Only the shoes will change.";
+    case "lower_body":
+      return "Use a full-body photo with legs visible. Only the bottoms will change.";
+    case "upper_body":
+      return "Use a photo that shows your torso. Only the top will change.";
+    case "full_body":
+      return "Use a full-body photo. The outfit on your photo will be replaced.";
+    default:
+      return "Use a clear full-body photo. Only the scanned item region will change.";
+  }
 }
