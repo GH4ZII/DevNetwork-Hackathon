@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,6 +12,9 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { ApiError, getScan, getTryOn, postTryOn } from "../../lib/api";
 import { session } from "../../lib/session";
+import { GlassButton } from "../../components/GlassButton";
+import { PrimaryButton } from "../../components/PrimaryButton";
+import { colors, radii, spacing, type } from "../../components/theme";
 import type { ScanResult } from "../../types/realitylens";
 
 function sleep(ms: number) {
@@ -22,11 +24,11 @@ function sleep(ms: number) {
 function hintFor(garment?: ScanResult["garmentCategory"]): string {
   switch (garment) {
     case "shoes":
-      return "Use a full-body photo with your feet visible. Only the shoes will change.";
+      return "Stand so your feet are clearly visible. Only the shoes will change.";
     case "lower_body":
       return "Use a full-body photo with legs visible. Only the bottoms will change.";
     case "upper_body":
-      return "Use a photo that shows your torso. Only the top (e.g. sweater) will change.";
+      return "Frame your torso in the shot. Only the top will change.";
     case "full_body":
       return "Use a full-body photo. The outfit on your photo will be replaced.";
     default:
@@ -34,16 +36,30 @@ function hintFor(garment?: ScanResult["garmentCategory"]): string {
   }
 }
 
+function frameLabel(garment?: ScanResult["garmentCategory"]): string {
+  switch (garment) {
+    case "shoes":
+      return "Full body · feet visible";
+    case "lower_body":
+      return "Full body · legs visible";
+    case "upper_body":
+      return "Half body · torso";
+    case "full_body":
+      return "Full body";
+    default:
+      return "Full body preferred";
+  }
+}
+
 export default function TryOnScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const [userUri, setUserUri] = useState<string | null>(null);
-  const [productImageUrl, setProductImageUrl] = useState<string | undefined>();
-  const [garmentCategory, setGarmentCategory] =
-    useState<ScanResult["garmentCategory"]>();
+  const [userUri, setUserUri] = useState(null);
+  const [productImageUrl, setProductImageUrl] = useState(undefined);
+  const [garmentCategory, setGarmentCategory] = useState(undefined);
   const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!id) return;
@@ -62,7 +78,11 @@ export default function TryOnScreen() {
       ? await ImagePicker.requestCameraPermissionsAsync()
       : await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      setError("Camera or photo permission is required.");
+      setError(
+        fromCamera
+          ? "Camera access is needed for your try-on photo."
+          : "Photo library access is needed to choose a photo.",
+      );
       return;
     }
     const result = fromCamera
@@ -83,7 +103,7 @@ export default function TryOnScreen() {
     }
     setBusy(true);
     setError(null);
-    setStatus("Uploading photos…");
+    setStatus("Uploading…");
     try {
       const started = await postTryOn({
         scanId: id,
@@ -94,7 +114,7 @@ export default function TryOnScreen() {
       if (!started.jobId) {
         throw new ApiError("Try-on did not return a job id.");
       }
-      setStatus("Generating try-on…");
+      setStatus("Generating…");
       for (let i = 0; i < 40; i += 1) {
         const current = await getTryOn(started.jobId);
         if (current.status === "completed" && current.resultImageUrl) {
@@ -104,13 +124,17 @@ export default function TryOnScreen() {
           return;
         }
         if (current.status === "error") {
-          throw new ApiError(current.error ?? "Try-on generation failed.");
+          throw new ApiError("Generation failed. Try a clearer photo.");
         }
         await sleep(3000);
       }
-      throw new ApiError("Try-on timed out. Try again.");
+      throw new ApiError("This is taking too long. Try again.");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Try-on failed.");
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Something went wrong. Please try again.",
+      );
     } finally {
       setBusy(false);
       setStatus(null);
@@ -118,84 +142,144 @@ export default function TryOnScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
-      <Text style={styles.title}>You found it. Now wear it.</Text>
+    <ScrollView
+      contentContainerStyle={styles.screen}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      <Text style={styles.title}>You found it.{"\n"}Now wear it.</Text>
       <Text style={styles.copy}>{hintFor(garmentCategory)}</Text>
-      {garmentCategory ? (
-        <Text style={styles.meta}>Swapping: {garmentCategory.replace("_", " ")}</Text>
-      ) : null}
+
+      <View style={styles.frameGuide}>
+        <View style={styles.silhouette}>
+          <View style={styles.silHead} />
+          <View style={styles.silBody} />
+          {(garmentCategory === "shoes" ||
+            garmentCategory === "lower_body" ||
+            garmentCategory === "full_body" ||
+            !garmentCategory) && <View style={styles.silFeet} />}
+        </View>
+        <Text style={styles.frameLabel}>{frameLabel(garmentCategory)}</Text>
+      </View>
 
       {userUri ? (
         <View style={styles.previewFrame}>
           <Image
             source={{ uri: userUri }}
             style={styles.preview}
-            resizeMode="contain"
+            resizeMode="cover"
           />
         </View>
-      ) : (
-        <View style={styles.placeholder}>
-          <Text style={styles.meta}>No user photo yet</Text>
-        </View>
-      )}
+      ) : null}
 
-      <Pressable style={styles.button} onPress={() => pick(true)} disabled={busy}>
-        <Text style={styles.buttonText}>Take photo</Text>
-      </Pressable>
-      <Pressable style={styles.button} onPress={() => pick(false)} disabled={busy}>
-        <Text style={styles.buttonText}>Choose from gallery</Text>
-      </Pressable>
-      <Pressable
-        style={[styles.primary, (!userUri || busy) && styles.disabled]}
-        onPress={generate}
-        disabled={!userUri || busy}
-      >
-        {busy ? (
-          <ActivityIndicator color="#111" />
-        ) : (
-          <Text style={styles.primaryText}>Generate Try-On</Text>
-        )}
-      </Pressable>
-      {status ? <Text style={styles.meta}>{status}</Text> : null}
+      <View style={styles.actions}>
+        <GlassButton
+          label="Take photo"
+          onPress={() => pick(true)}
+          disabled={busy}
+        />
+        <GlassButton
+          label="Choose from gallery"
+          onPress={() => pick(false)}
+          disabled={busy}
+        />
+        <PrimaryButton
+          label="Generate Try-On"
+          onPress={generate}
+          disabled={!userUri || busy}
+          loading={busy}
+        />
+      </View>
+
+      {busy && status ? (
+        <View style={styles.statusRow}>
+          <ActivityIndicator color={colors.text} />
+          <Text style={styles.status}>{status}</Text>
+        </View>
+      ) : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { padding: 20, gap: 12, flexGrow: 1 },
-  title: { color: "#fff", fontSize: 24, fontWeight: "700" },
-  copy: { color: "#bbb" },
+  screen: {
+    padding: spacing.xl,
+    gap: spacing.lg,
+    flexGrow: 1,
+    backgroundColor: colors.canvas,
+    paddingBottom: spacing.xxxl,
+  },
+  title: {
+    ...type.hero,
+    fontSize: 30,
+    color: colors.text,
+  },
+  copy: {
+    ...type.body,
+    color: colors.textMuted,
+  },
+  frameGuide: {
+    backgroundColor: colors.surfaceRaised,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    paddingVertical: spacing.xxl,
+    paddingHorizontal: spacing.xl,
+    alignItems: "center",
+    gap: spacing.lg,
+  },
+  silhouette: {
+    alignItems: "center",
+    gap: 6,
+    opacity: 0.55,
+  },
+  silHead: {
+    width: 36,
+    height: 36,
+    borderRadius: radii.full,
+    borderWidth: 2,
+    borderColor: colors.text,
+  },
+  silBody: {
+    width: 72,
+    height: 110,
+    borderRadius: radii.md,
+    borderWidth: 2,
+    borderColor: colors.text,
+  },
+  silFeet: {
+    width: 56,
+    height: 14,
+    borderRadius: radii.sm,
+    borderWidth: 2,
+    borderColor: colors.text,
+  },
+  frameLabel: {
+    ...type.label,
+    color: colors.textMuted,
+    textTransform: "uppercase",
+  },
   previewFrame: {
     width: "100%",
-    height: 420,
-    borderRadius: 8,
-    backgroundColor: "#222",
+    height: 360,
+    borderRadius: radii.lg,
+    backgroundColor: colors.surface,
     overflow: "hidden",
   },
   preview: { width: "100%", height: "100%" },
-  placeholder: {
-    height: 420,
-    borderRadius: 8,
-    backgroundColor: "#222",
+  actions: { gap: spacing.md },
+  statusRow: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: spacing.md,
   },
-  button: {
-    backgroundColor: "#2a2a2a",
-    padding: 14,
-    borderRadius: 8,
-    alignItems: "center",
+  status: {
+    ...type.body,
+    color: colors.textMuted,
   },
-  buttonText: { color: "#fff", fontWeight: "600" },
-  primary: {
-    backgroundColor: "#fff",
-    padding: 14,
-    borderRadius: 8,
-    alignItems: "center",
+  error: {
+    ...type.body,
+    color: colors.error,
   },
-  disabled: { opacity: 0.5 },
-  primaryText: { color: "#111", fontWeight: "700" },
-  meta: { color: "#bbb" },
-  error: { color: "#ff8a8a" },
 });

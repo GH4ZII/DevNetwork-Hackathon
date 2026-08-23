@@ -10,6 +10,12 @@
     "plugins": [
       "expo-router",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow RealityLens to scan products with your camera."
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "cameraPermission": "Allow RealityLens to take product and try-on photos.",

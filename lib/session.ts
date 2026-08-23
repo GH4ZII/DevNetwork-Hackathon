@@ -3,6 +3,7 @@ export type Session = {
   lastUserImageUri?: string;
   lastShopUrl?: string;
   lastResultImageUrl?: string;
+  pendingScanUri?: string;
 };
 
 export const session: Session = {};

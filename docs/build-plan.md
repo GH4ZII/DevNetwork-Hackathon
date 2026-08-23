@@ -40,14 +40,14 @@ This proves RealityLens.
 
 Build:
 
-- camera-like home screen with the real device camera
-- search animation
-- hero product result
-- merchant cards
-- lowest-price display
-- Try On CTA
-- photo guidance
-- generated reveal
+- [x] camera-like home screen with the real device camera
+- [x] search animation
+- [x] hero product result
+- [x] merchant cards
+- [x] lowest-price display
+- [x] Try On CTA
+- [x] photo guidance
+- [x] generated reveal
 
 ## Phase 3 — Reliability
 
