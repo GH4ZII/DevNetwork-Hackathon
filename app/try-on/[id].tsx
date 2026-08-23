@@ -15,13 +15,19 @@ import { session } from "../../lib/session";
 import { GlassButton } from "../../components/GlassButton";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { colors, radii, spacing, type } from "../../components/theme";
-import type { ScanResult } from "../../types/realitylens";
+import type { ProductCategory, ScanResult } from "../../types/realitylens";
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function hintFor(garment?: ScanResult["garmentCategory"]): string {
+function hintFor(
+  tryOnCategory?: ProductCategory,
+  garment?: ScanResult["garmentCategory"],
+): string {
+  if (tryOnCategory === "watch") {
+    return "Hold your wrist toward the camera with the watch area clearly visible.";
+  }
   switch (garment) {
     case "shoes":
       return "Stand so your feet are clearly visible. Only the shoes will change.";
@@ -36,7 +42,13 @@ function hintFor(garment?: ScanResult["garmentCategory"]): string {
   }
 }
 
-function frameLabel(garment?: ScanResult["garmentCategory"]): string {
+function frameLabel(
+  tryOnCategory?: ProductCategory,
+  garment?: ScanResult["garmentCategory"],
+): string {
+  if (tryOnCategory === "watch") {
+    return "Wrist · hand visible";
+  }
   switch (garment) {
     case "shoes":
       return "Full body · feet visible";
@@ -51,11 +63,35 @@ function frameLabel(garment?: ScanResult["garmentCategory"]): string {
   }
 }
 
+function FrameGuide({ tryOnCategory, garmentCategory }) {
+  if (tryOnCategory === "watch") {
+    return (
+      <View style={styles.silhouette}>
+        <View style={styles.silForearm} />
+        <View style={styles.silWrist} />
+        <View style={styles.silHand} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.silhouette}>
+      <View style={styles.silHead} />
+      <View style={styles.silBody} />
+      {(garmentCategory === "shoes" ||
+        garmentCategory === "lower_body" ||
+        garmentCategory === "full_body" ||
+        !garmentCategory) && <View style={styles.silFeet} />}
+    </View>
+  );
+}
+
 export default function TryOnScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [userUri, setUserUri] = useState(null);
   const [productImageUrl, setProductImageUrl] = useState(undefined);
+  const [tryOnCategory, setTryOnCategory] = useState(undefined);
   const [garmentCategory, setGarmentCategory] = useState(undefined);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState(null);
@@ -73,6 +109,7 @@ export default function TryOnScreen() {
     getScan(id)
       .then((scan) => {
         setProductImageUrl(scan.bestMatch?.imageUrl ?? scan.offers[0]?.imageUrl);
+        setTryOnCategory(scan.tryOnCategory ?? scan.bestMatch?.category);
         setGarmentCategory(scan.garmentCategory);
         session.lastShopUrl = scan.bestMatch?.url ?? scan.offers[0]?.url;
       })
@@ -171,18 +208,16 @@ export default function TryOnScreen() {
       showsVerticalScrollIndicator={false}
     >
       <Text style={styles.title}>You found it.{"\n"}Now wear it.</Text>
-      <Text style={styles.copy}>{hintFor(garmentCategory)}</Text>
+      <Text style={styles.copy}>{hintFor(tryOnCategory, garmentCategory)}</Text>
 
       <View style={styles.frameGuide}>
-        <View style={styles.silhouette}>
-          <View style={styles.silHead} />
-          <View style={styles.silBody} />
-          {(garmentCategory === "shoes" ||
-            garmentCategory === "lower_body" ||
-            garmentCategory === "full_body" ||
-            !garmentCategory) && <View style={styles.silFeet} />}
-        </View>
-        <Text style={styles.frameLabel}>{frameLabel(garmentCategory)}</Text>
+        <FrameGuide
+          tryOnCategory={tryOnCategory}
+          garmentCategory={garmentCategory}
+        />
+        <Text style={styles.frameLabel}>
+          {frameLabel(tryOnCategory, garmentCategory)}
+        </Text>
       </View>
 
       {userUri ? (
@@ -288,6 +323,30 @@ const styles = StyleSheet.create({
     borderRadius: radii.sm,
     borderWidth: 2,
     borderColor: colors.text,
+  },
+  silForearm: {
+    width: 18,
+    height: 72,
+    borderRadius: radii.sm,
+    borderWidth: 2,
+    borderColor: colors.text,
+    transform: [{ rotate: "-18deg" }],
+  },
+  silWrist: {
+    width: 28,
+    height: 28,
+    borderRadius: radii.full,
+    borderWidth: 2,
+    borderColor: colors.text,
+    marginTop: -8,
+  },
+  silHand: {
+    width: 40,
+    height: 22,
+    borderRadius: radii.sm,
+    borderWidth: 2,
+    borderColor: colors.text,
+    marginTop: -4,
   },
   frameLabel: {
     ...type.label,

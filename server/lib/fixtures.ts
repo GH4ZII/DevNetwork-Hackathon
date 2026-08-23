@@ -3,17 +3,23 @@ import { resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import { PROJECT_ROOT } from "./env.ts";
 import { assertScanResult, assertTryOnResult } from "./validate.ts";
-import type { ScanResult, TryOnResult } from "../../types/realitylens.ts";
+import type { ProductCategory, ScanResult, TryOnResult } from "../../types/realitylens.ts";
 
 function readJson(name: string): unknown {
   const path = resolve(PROJECT_ROOT, "server", "fixtures", name);
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
-/** Success fixture by default; set FIXTURE_SCAN=empty for no-product UI. */
-export function loadScanFixture(): ScanResult {
+function scanFixtureFile(): string {
   const which = process.env.FIXTURE_SCAN?.trim().toLowerCase();
-  const file = which === "empty" ? "scan-empty.json" : "scan-success.json";
+  if (which === "empty") return "scan-empty.json";
+  if (which === "watch") return "scan-watch-success.json";
+  return "scan-success.json";
+}
+
+/** Success fixture by default; FIXTURE_SCAN=empty | watch */
+export function loadScanFixture(): ScanResult {
+  const file = scanFixtureFile();
   console.log(`[fixtures] loading ${file}`);
   const result = assertScanResult(readJson(file));
   return {
@@ -22,9 +28,16 @@ export function loadScanFixture(): ScanResult {
   };
 }
 
-export function loadTryOnFixture(jobId: string): TryOnResult {
-  console.log("[fixtures] loading try-on-completed.json");
-  const result = assertTryOnResult(readJson("try-on-completed.json"));
+export function loadTryOnFixture(
+  jobId: string,
+  category: ProductCategory = "shoes",
+): TryOnResult {
+  const file =
+    category === "watch"
+      ? "try-on-watch-completed.json"
+      : "try-on-completed.json";
+  console.log(`[fixtures] loading ${file}`);
+  const result = assertTryOnResult(readJson(file));
   return {
     ...result,
     jobId,

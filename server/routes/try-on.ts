@@ -17,9 +17,16 @@ import {
   type GarmentCategory,
 } from "../lib/perfect/cloth.ts";
 import {
+  createWatchTask,
+  getWatchTask,
+  uploadWatchFile,
+  watchResultUrl,
+} from "../lib/perfect/watch.ts";
+import {
   isTryOnSupported,
+  resolveTryOnIntegration,
   toGarmentCategory,
-  tryOnHint,
+  tryOnPhotoGuide,
 } from "../lib/category/classify.ts";
 import { getScan, getTryOnJob, saveTryOnJob } from "../lib/store.ts";
 import { assertTryOnResult } from "../lib/validate.ts";
@@ -42,32 +49,43 @@ tryOnRoutes.post("/api/try-on", async (c) => {
 
     const category =
       stored.result.tryOnCategory ?? stored.result.bestMatch?.category;
-    if (!category || !stored.result.tryOnSupported || !isTryOnSupported(category)) {
+    const integration = category ? resolveTryOnIntegration(category) : null;
+    if (
+      !category ||
+      !stored.result.tryOnSupported ||
+      !isTryOnSupported(category) ||
+      !integration
+    ) {
       return c.json(
         {
           error:
-            "Try-on is available for shoes and clothing. Scan a supported item.",
+            "Try-on is available for shoes, clothing, and watches. Scan a supported item.",
         },
         400,
       );
     }
 
+    const guide = tryOnPhotoGuide(category, stored.result.garmentCategory);
+
     if (isFixtureMode()) {
       await readUpload(body.userImage, "userImage");
       const jobId = `tryon_${randomUUID()}`;
-      const result = assertTryOnResult(loadTryOnFixture(jobId));
+      const result = assertTryOnResult(
+        loadTryOnFixture(jobId, category),
+      );
       saveTryOnJob({
         jobId,
         scanId,
         taskId: "fixture",
         result,
         createdAt: Date.now(),
+        integration,
         garmentCategory: stored.result.garmentCategory,
       });
       return c.json({
         ...result,
         garmentCategory: stored.result.garmentCategory,
-        hint: tryOnHint(stored.result.garmentCategory ?? "shoes"),
+        hint: guide.hint,
       });
     }
 
@@ -80,6 +98,41 @@ tryOnRoutes.post("/api/try-on", async (c) => {
 
     if (productImageUrls.length === 0) {
       return c.json({ error: "No product image is available for try-on." }, 400);
+    }
+
+    const userImage = await prepareForTryOn(
+      await readUpload(body.userImage, "userImage"),
+    );
+    const productImage = await prepareForTryOn(
+      await downloadFirstImage(productImageUrls),
+    );
+
+    const baseUrl = getPerfectCorpBase();
+    const apiKey = getPerfectCorpKey();
+    const jobId = `tryon_${randomUUID()}`;
+
+    if (integration === "watch-vto") {
+      const [srcFileId, refFileId] = await Promise.all([
+        uploadWatchFile(baseUrl, apiKey, userImage, "wrist.jpg"),
+        uploadWatchFile(baseUrl, apiKey, productImage, "watch.jpg"),
+      ]);
+      const taskId = await createWatchTask(baseUrl, apiKey, {
+        srcFileId,
+        refFileId,
+      });
+      const result: TryOnResult = { status: "processing", jobId };
+      saveTryOnJob({
+        jobId,
+        scanId,
+        taskId,
+        result,
+        createdAt: Date.now(),
+        integration,
+      });
+      return c.json({
+        ...assertTryOnResult(result),
+        hint: guide.hint,
+      });
     }
 
     const garmentText = [
@@ -96,15 +149,6 @@ tryOnRoutes.post("/api/try-on", async (c) => {
       );
     }
 
-    const userImage = await prepareForTryOn(
-      await readUpload(body.userImage, "userImage"),
-    );
-    const productImage = await prepareForTryOn(
-      await downloadFirstImage(productImageUrls),
-    );
-
-    const baseUrl = getPerfectCorpBase();
-    const apiKey = getPerfectCorpKey();
     const [srcFileId, refFileId] = await Promise.all([
       uploadClothFile(baseUrl, apiKey, userImage, "user.jpg"),
       uploadClothFile(baseUrl, apiKey, productImage, "product.jpg"),
@@ -115,7 +159,6 @@ tryOnRoutes.post("/api/try-on", async (c) => {
       garmentCategory,
     });
 
-    const jobId = `tryon_${randomUUID()}`;
     const result: TryOnResult = { status: "processing", jobId };
     saveTryOnJob({
       jobId,
@@ -123,13 +166,14 @@ tryOnRoutes.post("/api/try-on", async (c) => {
       taskId,
       result,
       createdAt: Date.now(),
+      integration,
       garmentCategory,
     });
 
     return c.json({
       ...assertTryOnResult(result),
       garmentCategory,
-      hint: tryOnHint(garmentCategory),
+      hint: guide.hint,
     });
   } catch (err) {
     if (err instanceof HTTPException) throw err;
@@ -157,19 +201,25 @@ tryOnRoutes.get("/api/try-on/:jobId", async (c) => {
   }
 
   if (isFixtureMode()) {
-    stored.result = assertTryOnResult(loadTryOnFixture(jobId));
+    const scan = getScan(stored.scanId);
+    const category =
+      scan?.result.tryOnCategory ?? scan?.result.bestMatch?.category ?? "shoes";
+    stored.result = assertTryOnResult(loadTryOnFixture(jobId, category));
     saveTryOnJob(stored);
     return c.json(stored.result);
   }
 
   try {
-    const status = await getClothTask(
-      getPerfectCorpBase(),
-      getPerfectCorpKey(),
-      stored.taskId,
-    );
+    const baseUrl = getPerfectCorpBase();
+    const apiKey = getPerfectCorpKey();
+    const isWatch = stored.integration === "watch-vto";
+    const status = isWatch
+      ? await getWatchTask(baseUrl, apiKey, stored.taskId)
+      : await getClothTask(baseUrl, apiKey, stored.taskId);
     const taskStatus = status.data?.task_status;
-    const resultUrl = status.data?.results?.url;
+    const resultUrl = isWatch
+      ? watchResultUrl(status)
+      : status.data?.results?.url;
 
     if (taskStatus === "success" && resultUrl) {
       stored.result = assertTryOnResult({
@@ -183,17 +233,20 @@ tryOnRoutes.get("/api/try-on/:jobId", async (c) => {
     }
 
     if (taskStatus === "error") {
-      const detail =
-        typeof status.data?.error === "string"
-          ? status.data.error
-          : status.data?.error
-            ? JSON.stringify(status.data.error)
-            : undefined;
+      const watchMessage =
+        isWatch &&
+        status.data &&
+        typeof status.data === "object" &&
+        "error_message" in status.data &&
+        typeof (status.data as { error_message?: string }).error_message ===
+          "string"
+          ? (status.data as { error_message: string }).error_message
+          : undefined;
       stored.result = assertTryOnResult({
         status: "error",
         jobId,
-        error: detail
-          ? `Try-on failed. Try a clearer full-body photo.`
+        error: watchMessage?.toLowerCase().includes("hand")
+          ? "No hand detected. Use a clear photo of your wrist."
           : "Try-on generation failed. Try another photo.",
       });
       saveTryOnJob(stored);

@@ -128,7 +128,7 @@ export default function MatchScreen() {
 
         {!scan.tryOnSupported && match ? (
           <Text style={styles.meta}>
-            Try-on is available for shoes and clothing.
+            Try-on is available for shoes, clothing, and watches.
           </Text>
         ) : null}
       </View>

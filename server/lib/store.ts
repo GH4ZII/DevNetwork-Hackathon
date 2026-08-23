@@ -1,4 +1,5 @@
 import type { ScanResult, TryOnResult } from "../../types/realitylens.ts";
+import type { TryOnIntegration } from "./category/classify.ts";
 
 export interface StoredScan {
   scanId: string;
@@ -13,6 +14,7 @@ export interface StoredTryOnJob {
   taskId: string;
   result: TryOnResult;
   createdAt: number;
+  integration: TryOnIntegration;
   garmentCategory?: string;
 }
 

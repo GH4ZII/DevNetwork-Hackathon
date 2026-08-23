@@ -71,8 +71,8 @@ Choose only after shoes work perfectly.
 
 Priority:
 
-1. watch
-2. clothes
+1. watch — **done** (Perfect Corp `2d-vto/watch` integration)
+2. clothes — partially via cloth-v4 (regression only)
 3. bag
 
 ## Phase 5 — Demo polish

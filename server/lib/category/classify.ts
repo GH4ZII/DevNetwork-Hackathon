@@ -1,5 +1,8 @@
 import type { ProductCategory } from "../../../types/realitylens.ts";
+import type { ScanResult } from "../../../types/realitylens.ts";
 import type { GarmentCategory } from "../perfect/cloth.ts";
+
+export type TryOnIntegration = "cloth-v4" | "watch-vto";
 
 const RULES: Array<{ category: ProductCategory; pattern: RegExp }> = [
   {
@@ -46,8 +49,11 @@ const RULES: Array<{ category: ProductCategory; pattern: RegExp }> = [
   },
 ];
 
-/** Categories we can try on via Perfect Corp Clothes (cloth-v4). */
-const TRY_ON_CATEGORIES = new Set<ProductCategory>(["shoes", "clothes"]);
+const TRY_ON_CATEGORIES = new Set<ProductCategory>([
+  "shoes",
+  "clothes",
+  "watch",
+]);
 
 const LOWER_BODY =
   /\b(pants|jeans|trousers|shorts|skirt|leggings|chinos?|sweatpants|joggers|culottes)\b/i;
@@ -71,10 +77,14 @@ export function isTryOnSupported(category: ProductCategory): boolean {
   return TRY_ON_CATEGORIES.has(category);
 }
 
-/**
- * Maps RealityLens category + product title text to Perfect Corp
- * garment_category so only that region is swapped on the user photo.
- */
+export function resolveTryOnIntegration(
+  category: ProductCategory,
+): TryOnIntegration | null {
+  if (category === "watch") return "watch-vto";
+  if (category === "shoes" || category === "clothes") return "cloth-v4";
+  return null;
+}
+
 export function toGarmentCategory(
   category: ProductCategory,
   text = "",
@@ -86,8 +96,25 @@ export function toGarmentCategory(
   if (LOWER_BODY.test(haystack)) return "lower_body";
   if (FULL_BODY.test(haystack)) return "full_body";
   if (UPPER_BODY.test(haystack)) return "upper_body";
-  // Ambiguous clothing — let Perfect Corp classify the product image
   return "auto";
+}
+
+export function tryOnPhotoGuide(
+  category: ProductCategory,
+  garmentCategory?: ScanResult["garmentCategory"],
+): { hint: string; frameLabel: string } {
+  if (category === "watch") {
+    return {
+      hint: "Hold your wrist toward the camera with the watch area clearly visible.",
+      frameLabel: "Wrist · hand visible",
+    };
+  }
+
+  const garment = garmentCategory ?? (category === "shoes" ? "shoes" : "auto");
+  return {
+    hint: tryOnHint(garment),
+    frameLabel: frameLabelFor(garment),
+  };
 }
 
 export function tryOnHint(garment: GarmentCategory): string {
@@ -102,5 +129,20 @@ export function tryOnHint(garment: GarmentCategory): string {
       return "Use a full-body photo. The outfit on your photo will be replaced.";
     default:
       return "Use a clear full-body photo. Only the scanned item region will change.";
+  }
+}
+
+function frameLabelFor(garment: GarmentCategory): string {
+  switch (garment) {
+    case "shoes":
+      return "Full body · feet visible";
+    case "lower_body":
+      return "Full body · legs visible";
+    case "upper_body":
+      return "Half body · torso";
+    case "full_body":
+      return "Full body";
+    default:
+      return "Full body preferred";
   }
 }

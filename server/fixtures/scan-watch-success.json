@@ -1,0 +1,42 @@
+{
+  "scanId": "scan_fixture_watch",
+  "bestMatch": {
+    "id": "match_1",
+    "title": "Apple Watch Series 9",
+    "category": "watch",
+    "imageUrl": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800",
+    "source": "Apple",
+    "url": "https://www.apple.com/watch/",
+    "label": "best_match"
+  },
+  "offers": [
+    {
+      "id": "offer_1",
+      "title": "Apple Watch Series 9 GPS 45mm",
+      "merchant": "Apple",
+      "priceText": "$429.00",
+      "priceValue": 429,
+      "currency": "USD",
+      "inStock": true,
+      "rating": 4.8,
+      "reviews": 2100,
+      "imageUrl": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+      "url": "https://www.apple.com/watch/"
+    },
+    {
+      "id": "offer_2",
+      "title": "Series 9 Aluminum Case",
+      "merchant": "Best Buy",
+      "priceText": "$399.99",
+      "priceValue": 399.99,
+      "currency": "USD",
+      "inStock": true,
+      "rating": 4.7,
+      "reviews": 890,
+      "imageUrl": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+      "url": "https://www.bestbuy.com/"
+    }
+  ],
+  "tryOnSupported": true,
+  "tryOnCategory": "watch"
+}
