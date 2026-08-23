@@ -33,11 +33,13 @@ function hintFor(
   }
   switch (garment) {
     case "shoes":
-      return "Stand so your feet are clearly visible. Only the shoes will change.";
+      return "Stand so your full body and feet are clearly visible. Only the shoes will change.";
     case "lower_body":
       return "Use a full-body photo with legs visible. Only the bottoms will change.";
     case "upper_body":
-      return "Frame your torso in the shot. Only the top will change.";
+      return "Use a full-body photo. Only the top will change — your whole body stays in frame.";
+    case "outerwear":
+      return "Use a full-body photo. Only the jacket/coat will change — nothing is cropped.";
     case "full_body":
       return "Use a full-body photo. The outfit on your photo will be replaced.";
     default:
@@ -58,7 +60,9 @@ function frameLabel(
     case "lower_body":
       return "Full body · legs visible";
     case "upper_body":
-      return "Half body · torso";
+      return "Full body · top only swaps";
+    case "outerwear":
+      return "Full body · jacket only swaps";
     case "full_body":
       return "Full body";
     default:
@@ -81,10 +85,7 @@ function FrameGuide({ tryOnCategory, garmentCategory }) {
     <View style={styles.silhouette}>
       <View style={styles.silHead} />
       <View style={styles.silBody} />
-      {(garmentCategory === "shoes" ||
-        garmentCategory === "lower_body" ||
-        garmentCategory === "full_body" ||
-        !garmentCategory) && <View style={styles.silFeet} />}
+      <View style={styles.silFeet} />
     </View>
   );
 }
@@ -247,7 +248,7 @@ export default function TryOnScreen() {
           <Image
             source={{ uri: userUri }}
             style={styles.preview}
-            resizeMode="cover"
+            resizeMode="contain"
           />
         </View>
       ) : null}

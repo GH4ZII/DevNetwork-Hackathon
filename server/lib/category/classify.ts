@@ -59,8 +59,11 @@ const LOWER_BODY =
   /\b(pants|jeans|trousers|shorts|skirt|leggings|chinos?|sweatpants|joggers|culottes)\b/i;
 const FULL_BODY =
   /\b(dress|jumpsuit|romper|suit|tuxedo|gown|overalls?|onesie|bodysuit)\b/i;
+/** Jackets/coats: Perfect Corp cloth-v4 outerwear swaps only the outer layer. */
+const OUTERWEAR =
+  /\b(jacket|jackets|coat|coats|blazer|blazers|parka|parkas|windbreaker|vest|vests|outerwear)\b/i;
 const UPPER_BODY =
-  /\b(shirt|jacket|hoodie|coat|sweater|tee|t-shirt|blouse|top|cardigan|vest|pullover|crewneck|polo|blazer|parka|windbreaker|sweatshirt|tank|camisole|outerwear)\b/i;
+  /\b(shirt|hoodie|sweater|tee|t-shirt|blouse|top|cardigan|pullover|crewneck|polo|sweatshirt|tank|camisole)\b/i;
 
 export function classifyCategory(text: string): ProductCategory {
   const haystack = text.trim();
@@ -95,6 +98,7 @@ export function toGarmentCategory(
   const haystack = text.trim();
   if (LOWER_BODY.test(haystack)) return "lower_body";
   if (FULL_BODY.test(haystack)) return "full_body";
+  if (OUTERWEAR.test(haystack)) return "outerwear";
   if (UPPER_BODY.test(haystack)) return "upper_body";
   return "auto";
 }
@@ -120,15 +124,17 @@ export function tryOnPhotoGuide(
 export function tryOnHint(garment: GarmentCategory): string {
   switch (garment) {
     case "shoes":
-      return "Use a full-body photo with your feet visible. Only the shoes will change.";
+      return "Use a full-body photo with your feet visible. Only the shoes will change — the rest of you stays.";
     case "lower_body":
-      return "Use a full-body photo with legs visible. Only the bottoms will change.";
+      return "Use a full-body photo with legs visible. Only the bottoms will change — your full body stays in frame.";
     case "upper_body":
-      return "Use a photo that shows your torso. Only the top will change.";
+      return "Use a full-body photo. Only the top (sweater, shirt, etc.) will change — nothing else is cropped.";
+    case "outerwear":
+      return "Use a full-body photo. Only the jacket/coat layer will change — your full body stays visible.";
     case "full_body":
-      return "Use a full-body photo. The outfit on your photo will be replaced.";
+      return "Use a full-body photo. The outfit on your photo will be replaced, but the whole frame is kept.";
     default:
-      return "Use a clear full-body photo. Only the scanned item region will change.";
+      return "Use a clear full-body photo. Only the scanned item region will change — your full body stays visible.";
   }
 }
 
@@ -139,7 +145,9 @@ function frameLabelFor(garment: GarmentCategory): string {
     case "lower_body":
       return "Full body · legs visible";
     case "upper_body":
-      return "Half body · torso";
+      return "Full body · top only swaps";
+    case "outerwear":
+      return "Full body · jacket only swaps";
     case "full_body":
       return "Full body";
     default:

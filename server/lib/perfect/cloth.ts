@@ -6,6 +6,7 @@ export type GarmentCategory =
   | "full_body"
   | "lower_body"
   | "upper_body"
+  | "outerwear"
   | "shoes"
   | "auto";
 

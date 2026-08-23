@@ -31,7 +31,7 @@ export default function RootLayout() {
         <Stack.Screen name="try-on/[id]" options={{ title: "Try On" }} />
         <Stack.Screen
           name="result/[id]"
-          options={{ title: "Reveal", headerTransparent: true, headerTitle: "" }}
+          options={{ title: "Reveal", headerShown: false }}
         />
       </Stack>
     </GestureHandlerRootView>

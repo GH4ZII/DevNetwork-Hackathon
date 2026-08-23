@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -17,7 +18,7 @@ import { session } from "../../lib/session";
 import { BeforeAfterSlider } from "../../components/BeforeAfterSlider";
 import { GlassButton } from "../../components/GlassButton";
 import { PrimaryButton } from "../../components/PrimaryButton";
-import { colors, spacing, type } from "../../components/theme";
+import { colors, radii, spacing, type } from "../../components/theme";
 
 export default function ResultScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -73,21 +74,30 @@ export default function ResultScreen() {
     );
   }
 
+  const topPad = insets.top + spacing.md;
+
   return (
     <View style={[styles.screen, { paddingBottom: insets.bottom + spacing.lg }]}>
-      <Animated.View entering={FadeIn.duration(400)} style={styles.sliderArea}>
-        {userUri ? (
-          <BeforeAfterSlider beforeUri={userUri} afterUri={resultUrl} />
-        ) : (
-          <View style={styles.afterOnly}>
-            <Image
-              source={{ uri: resultUrl }}
-              style={StyleSheet.absoluteFill}
-              resizeMode="cover"
-            />
-          </View>
-        )}
-      </Animated.View>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: topPad }]}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
+        <Animated.View entering={FadeIn.duration(400)} style={styles.sliderArea}>
+          {userUri ? (
+            <BeforeAfterSlider beforeUri={userUri} afterUri={resultUrl} />
+          ) : (
+            <View style={styles.afterOnly}>
+              <Image
+                source={{ uri: resultUrl }}
+                style={styles.afterImage}
+                resizeMode="contain"
+              />
+            </View>
+          )}
+        </Animated.View>
+      </ScrollView>
 
       <View style={styles.bottom}>
         <Text style={styles.caption}>Your look</Text>
@@ -127,6 +137,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.canvas,
   },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
+  },
   centered: {
     flex: 1,
     alignItems: "center",
@@ -136,18 +154,25 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
   },
   sliderArea: {
-    flex: 1,
-    padding: spacing.md,
+    width: "100%",
   },
   afterOnly: {
-    flex: 1,
-    borderRadius: 20,
-    overflow: "hidden",
+    width: "100%",
+    minHeight: 320,
+    borderRadius: radii.lg,
     backgroundColor: colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  afterImage: {
+    width: "100%",
+    height: "100%",
   },
   bottom: {
     paddingHorizontal: spacing.xl,
+    paddingTop: spacing.sm,
     gap: spacing.md,
+    backgroundColor: colors.canvas,
   },
   caption: {
     ...type.label,
