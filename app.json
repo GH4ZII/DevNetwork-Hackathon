@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "RealityLens",
+    "slug": "realitylens",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "realitylens",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow RealityLens to take product and try-on photos.",
+          "photosPermission": "Allow RealityLens to pick product and try-on photos."
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow RealityLens to take product and try-on photos.",
+        "NSPhotoLibraryUsageDescription": "Allow RealityLens to pick product and try-on photos."
+      }
+    },
+    "android": {
+      "permissions": ["CAMERA"],
+      "usesCleartextTraffic": true
+    },
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

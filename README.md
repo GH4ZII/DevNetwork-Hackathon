@@ -31,8 +31,6 @@ The app never talks to SerpApi or Perfect Corp directly.
 
 ## Getting started
 
-SerpApi and Perfect Corp are proven. Next is the Phase 1 backend + ugly Expo slice.
-
 ```bash
 npm install
 cp .env.example .env
@@ -42,6 +40,19 @@ Add keys to `.env`:
 
 1. [SerpApi signup](https://serpapi.com/users/sign_up) → `SERPAPI_API_KEY`
 2. [YouCam / Perfect Corp API keys](https://yce.makeupar.com/api-console/en/api-keys/) → `PERFECT_CORP_API_KEY`
+
+Run the API, then the app:
+
+```bash
+npm run server
+npm start
+```
+
+The API listens on `http://0.0.0.0:3000`. Open the app in Expo Go.
+
+On a physical phone, set `EXPO_PUBLIC_API_URL` to your computer's LAN IP, for example `http://192.168.1.10:3000`. `localhost` only works in a simulator on the same machine.
+
+Phase 1 is an ugly but complete shoes flow: scan a shoe photo, review the match and offers, then generate a try-on.
 
 ### Environment variables
 

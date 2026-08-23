@@ -1,8 +1,5 @@
 import { randomUUID } from "node:crypto";
-import {
-  classifyCategory,
-  isTryOnSupported,
-} from "../category/classify.ts";
+import { classifyCategory, isTryOnSupported } from "../category/classify.ts";
 import type { GoogleLensResponse, LensVisualMatch } from "./lens.ts";
 import type { Offer, ProductMatch, ScanResult } from "../../../types/realitylens.ts";
 

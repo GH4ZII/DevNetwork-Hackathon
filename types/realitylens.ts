@@ -44,3 +44,13 @@ export interface ScanResult {
   tryOnSupported: boolean;
   tryOnCategory?: ProductCategory;
 }
+
+export type TryOnStatus = "processing" | "completed" | "error";
+
+export interface TryOnResult {
+  status: TryOnStatus;
+  jobId?: string;
+  resultImageUrl?: string;
+  provider?: "perfect_corp";
+  error?: string;
+}

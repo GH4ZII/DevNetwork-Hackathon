@@ -45,18 +45,8 @@ const RULES: Array<{ category: ProductCategory; pattern: RegExp }> = [
   },
 ];
 
-const TRY_ON_CATEGORIES = new Set<ProductCategory>([
-  "shoes",
-  "watch",
-  "clothes",
-  "bag",
-  "hat",
-  "ring",
-  "bracelet",
-  "earrings",
-  "necklace",
-  "scarf",
-]);
+/** Phase 1 implements shoes only. Other categories wait until Phase 4. */
+const TRY_ON_CATEGORIES = new Set<ProductCategory>(["shoes"]);
 
 export function classifyCategory(text: string): ProductCategory {
   const haystack = text.trim();
