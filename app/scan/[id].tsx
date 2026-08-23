@@ -37,12 +37,14 @@ export default function MatchScreen() {
   const [scan, setScan] = useState(null);
   const [error, setError] = useState(null);
   const [dealsY, setDealsY] = useState(0);
+  const [heroIndex, setHeroIndex] = useState(0);
 
   useEffect(() => {
     if (!id) return;
     getScan(id)
       .then((result) => {
         setScan(result);
+        setHeroIndex(0);
         session.lastScanId = result.scanId;
         session.lastShopUrl = result.bestMatch?.url ?? result.offers[0]?.url;
       })
@@ -54,6 +56,17 @@ export default function MatchScreen() {
         );
       });
   }, [id]);
+
+  const heroCandidates = useMemo(() => {
+    if (!scan) return [];
+    const urls = [
+      scan.bestMatch?.imageUrl,
+      ...scan.offers.map((offer) => offer.imageUrl),
+    ].filter((uri): uri is string => Boolean(uri));
+    return [...new Set(urls)];
+  }, [scan]);
+
+  const heroUri = heroCandidates[heroIndex] ?? null;
 
   if (error) {
     return (
@@ -73,6 +86,10 @@ export default function MatchScreen() {
 
   function viewDeals() {
     scrollRef.current?.scrollTo({ y: Math.max(0, dealsY - 12), animated: true });
+  }
+
+  function onHeroError() {
+    setHeroIndex((i) => i + 1);
   }
 
   if (empty) {
@@ -95,8 +112,14 @@ export default function MatchScreen() {
       showsVerticalScrollIndicator={false}
     >
       <Animated.View entering={FadeIn.duration(320)} style={styles.heroWrap}>
-        {match?.imageUrl ? (
-          <Image source={{ uri: match.imageUrl }} style={styles.hero} />
+        {heroUri ? (
+          <Image
+            key={heroUri}
+            source={{ uri: heroUri }}
+            style={styles.hero}
+            resizeMode="cover"
+            onError={onHeroError}
+          />
         ) : (
           <View style={[styles.hero, styles.heroEmpty]}>
             <Text style={styles.meta}>No product image</Text>
@@ -191,13 +214,14 @@ function createStyles(colors: ThemeColors) {
     heroWrap: {
       paddingHorizontal: spacing.xl,
       paddingTop: spacing.lg,
+      ...shadows.card,
     },
     hero: {
       width: "100%",
       height: 320,
       borderRadius: radii.lg,
       backgroundColor: colors.surface,
-      ...shadows.card,
+      overflow: "hidden",
     },
     heroEmpty: {
       alignItems: "center",
