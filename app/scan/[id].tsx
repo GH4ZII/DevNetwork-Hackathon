@@ -12,6 +12,7 @@ import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { ApiError, getScan } from "../../lib/api";
 import { session } from "../../lib/session";
 import { GlassButton } from "../../components/GlassButton";
+import { GlassCard } from "../../components/GlassCard";
 import { MatchLabelBadge } from "../../components/MatchLabelBadge";
 import { MerchantCard } from "../../components/MerchantCard";
 import { PrimaryButton } from "../../components/PrimaryButton";
@@ -20,6 +21,8 @@ import { MatchScreenSkeleton } from "../../components/Skeleton";
 import {
   colors,
   formatCategory,
+  radii,
+  shadows,
   spacing,
   type,
 } from "../../components/theme";
@@ -53,7 +56,7 @@ export default function MatchScreen() {
     return (
       <View style={styles.centered}>
         <Text style={styles.error}>{error}</Text>
-        <GlassButton label="Scan again" onPress={() => router.replace("/")} />
+        <GlassButton label="Scan again" onPress={() => router.replace("/(tabs)/camera")} />
       </View>
     );
   }
@@ -77,7 +80,7 @@ export default function MatchScreen() {
           We couldn't match this photo to a product. Try a clearer shot of the
           item with good lighting.
         </Text>
-        <GlassButton label="Scan again" onPress={() => router.replace("/")} />
+        <GlassButton label="Scan again" onPress={() => router.replace("/(tabs)/camera")} />
       </View>
     );
   }
@@ -88,7 +91,7 @@ export default function MatchScreen() {
       contentContainerStyle={styles.screen}
       showsVerticalScrollIndicator={false}
     >
-      <Animated.View entering={FadeIn.duration(320)}>
+      <Animated.View entering={FadeIn.duration(320)} style={styles.heroWrap}>
         {match?.imageUrl ? (
           <Image source={{ uri: match.imageUrl }} style={styles.hero} />
         ) : (
@@ -102,6 +105,7 @@ export default function MatchScreen() {
         entering={FadeInDown.duration(360).delay(80)}
         style={styles.heroBody}
       >
+        <GlassCard style={styles.infoCard}>
         <MatchLabelBadge label={match?.label} />
         <Text style={styles.title}>{match?.title ?? "Similar products"}</Text>
         {match?.category ? (
@@ -137,6 +141,7 @@ export default function MatchScreen() {
             Try-on is available for shoes, clothing, and watches.
           </Text>
         ) : null}
+        </GlassCard>
       </Animated.View>
 
       <View
@@ -179,10 +184,16 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     textAlign: "center",
   },
+  heroWrap: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+  },
   hero: {
     width: "100%",
-    height: 340,
+    height: 320,
+    borderRadius: radii.lg,
     backgroundColor: colors.surface,
+    ...shadows.card,
   },
   heroEmpty: {
     alignItems: "center",
@@ -191,6 +202,8 @@ const styles = StyleSheet.create({
   heroBody: {
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.lg,
+  },
+  infoCard: {
     gap: spacing.sm,
   },
   title: {

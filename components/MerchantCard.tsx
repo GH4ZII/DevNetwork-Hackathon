@@ -1,6 +1,6 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { openExternalUrl } from "../lib/openUrl";
-import { colors, radii, spacing, type } from "./theme";
+import { colors, radii, shadows, spacing, type } from "./theme";
 import type { Offer } from "../types/realitylens";
 
 type Props = {
@@ -50,11 +50,12 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     gap: spacing.md,
-    backgroundColor: colors.surfaceRaised,
-    borderRadius: radii.md,
+    backgroundColor: colors.glass,
+    borderRadius: radii.lg,
     padding: spacing.md,
     borderWidth: 1,
     borderColor: colors.glassBorder,
+    ...shadows.card,
   },
   thumb: {
     width: 64,

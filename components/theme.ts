@@ -1,15 +1,19 @@
+import { Platform } from "react-native";
+
 export const colors = {
   canvas: "#0A0A0A",
   surface: "#161616",
   surfaceRaised: "#1E1E1E",
-  glass: "rgba(255,255,255,0.12)",
-  glassBorder: "rgba(255,255,255,0.18)",
+  glass: "rgba(255,255,255,0.06)",
+  glassBorder: "rgba(255,255,255,0.12)",
   text: "#FFFFFF",
   textMuted: "#A8A8A8",
   textDim: "#6E6E6E",
   primary: "#FFFFFF",
   primaryText: "#0A0A0A",
-  accent: "#E8E8E8",
+  accent: "#6366F1",
+  accentMuted: "rgba(99,102,241,0.2)",
+  gradientTop: "rgba(255,255,255,0.03)",
   error: "#FF8A8A",
   success: "#8AFFB0",
   overlay: "rgba(0,0,0,0.45)",
@@ -35,14 +39,87 @@ export const radii = {
   full: 999,
 };
 
+export const tabBarHeight = 64;
+
+export const shadows = {
+  card: Platform.select({
+    ios: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.25,
+      shadowRadius: 12,
+    },
+    android: { elevation: 4 },
+    default: {},
+  }),
+  tabBar: Platform.select({
+    ios: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.35,
+      shadowRadius: 16,
+    },
+    android: { elevation: 8 },
+    default: {},
+  }),
+  cameraButton: Platform.select({
+    ios: {
+      shadowColor: "#6366F1",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.35,
+      shadowRadius: 12,
+    },
+    android: { elevation: 6 },
+    default: {},
+  }),
+};
+
+export const fontFamily = {
+  regular: "Inter_400Regular",
+  medium: "Inter_500Medium",
+  semibold: "Inter_600SemiBold",
+  bold: "Inter_700Bold",
+};
+
 export const type = {
-  hero: { fontSize: 32, fontWeight: "700" as const, letterSpacing: -0.5 },
-  title: { fontSize: 24, fontWeight: "700" as const, letterSpacing: -0.3 },
-  subtitle: { fontSize: 16, fontWeight: "500" as const },
-  body: { fontSize: 15, fontWeight: "400" as const },
-  caption: { fontSize: 13, fontWeight: "500" as const },
-  label: { fontSize: 12, fontWeight: "600" as const, letterSpacing: 0.4 },
-  price: { fontSize: 22, fontWeight: "700" as const },
+  hero: {
+    fontSize: 32,
+    fontWeight: "700" as const,
+    letterSpacing: -0.5,
+    fontFamily: fontFamily.bold,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "700" as const,
+    letterSpacing: -0.3,
+    fontFamily: fontFamily.bold,
+  },
+  subtitle: {
+    fontSize: 16,
+    fontWeight: "500" as const,
+    fontFamily: fontFamily.medium,
+  },
+  body: {
+    fontSize: 15,
+    fontWeight: "400" as const,
+    fontFamily: fontFamily.regular,
+  },
+  caption: {
+    fontSize: 13,
+    fontWeight: "500" as const,
+    fontFamily: fontFamily.medium,
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: "600" as const,
+    letterSpacing: 0.4,
+    fontFamily: fontFamily.semibold,
+  },
+  price: {
+    fontSize: 22,
+    fontWeight: "700" as const,
+    fontFamily: fontFamily.bold,
+  },
 };
 
 export function formatMatchLabel(

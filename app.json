@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "scheme": "realitylens",
     "userInterfaceStyle": "dark",
+    "backgroundColor": "#0A0A0A",
     "newArchEnabled": true,
     "plugins": [
       "expo-router",
@@ -22,7 +23,8 @@
           "photosPermission": "Allow RealityLens to pick product and try-on photos."
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "expo-font"
     ],
     "ios": {
       "supportsTablet": true,

@@ -18,16 +18,16 @@ export function MatchLabelBadge({ label }: Props) {
 const styles = StyleSheet.create({
   badge: {
     alignSelf: "flex-start",
-    backgroundColor: colors.glass,
+    backgroundColor: colors.accentMuted,
     borderWidth: 1,
-    borderColor: colors.glassBorder,
+    borderColor: colors.accent,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs + 2,
     borderRadius: radii.full,
   },
   text: {
     ...type.label,
-    color: colors.text,
+    color: colors.accent,
     textTransform: "uppercase",
   },
 });

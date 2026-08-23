@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Animated, {
   FadeIn,
@@ -27,10 +28,12 @@ export default function SearchingScreen() {
   const [stageIndex, setStageIndex] = useState(0);
   const [error, setError] = useState(null);
   const pulse = useSharedValue(0.35);
+  const ringScale = useSharedValue(1);
 
   useEffect(() => {
     pulse.value = withRepeat(withTiming(1, { duration: 900 }), -1, true);
-  }, [pulse]);
+    ringScale.value = withRepeat(withTiming(1.15, { duration: 1200 }), -1, true);
+  }, [pulse, ringScale]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -55,7 +58,6 @@ export default function SearchingScreen() {
         session.pendingScanUri = undefined;
         session.lastScanId = scan.scanId;
         session.lastShopUrl = scan.bestMatch?.url ?? scan.offers[0]?.url;
-        // Empty results still land on the match screen for a dedicated fallback.
         router.replace(`/scan/${scan.scanId}`);
       } catch (err) {
         if (!cancelled) {
@@ -80,9 +82,23 @@ export default function SearchingScreen() {
     transform: [{ scaleX: 0.55 + pulse.value * 0.45 }],
   }));
 
+  const ringStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: ringScale.value }],
+    opacity: 0.35 + (ringScale.value - 1) * 2,
+  }));
+
   return (
     <View style={[styles.screen, { paddingTop: insets.top + spacing.xxxl }]}>
+      <View style={styles.glow} pointerEvents="none" />
       <Text style={styles.kicker}>RealityLens</Text>
+
+      <View style={styles.iconWrap}>
+        <Animated.View style={[styles.ring, ringStyle]} />
+        <View style={styles.iconCircle}>
+          <Ionicons name="search" size={28} color={colors.accent} />
+        </View>
+      </View>
+
       <View style={styles.stageWrap}>
         <Animated.Text
           key={STAGES[stageIndex]}
@@ -102,7 +118,7 @@ export default function SearchingScreen() {
             style={styles.backBtn}
             onPress={() => {
               session.pendingScanUri = undefined;
-              router.replace("/");
+              router.replace("/(tabs)/camera");
             }}
           >
             <Text style={styles.backText}>Back to camera</Text>
@@ -122,10 +138,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     gap: spacing.xxl,
   },
+  glow: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 280,
+    backgroundColor: colors.gradientTop,
+  },
   kicker: {
     ...type.label,
-    color: colors.textMuted,
+    color: colors.accent,
     textTransform: "uppercase",
+  },
+  iconWrap: {
+    alignSelf: "center",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 96,
+    height: 96,
+  },
+  ring: {
+    position: "absolute",
+    width: 96,
+    height: 96,
+    borderRadius: radii.full,
+    borderWidth: 2,
+    borderColor: colors.accent,
+  },
+  iconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: radii.full,
+    backgroundColor: colors.accentMuted,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    alignItems: "center",
+    justifyContent: "center",
   },
   stageWrap: {
     gap: spacing.lg,
@@ -139,7 +188,7 @@ const styles = StyleSheet.create({
     height: 3,
     width: "100%",
     borderRadius: radii.full,
-    backgroundColor: colors.text,
+    backgroundColor: colors.accent,
   },
   hint: {
     ...type.body,
@@ -159,7 +208,7 @@ const styles = StyleSheet.create({
     borderColor: colors.glassBorder,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    borderRadius: radii.md,
+    borderRadius: radii.lg,
   },
   backText: {
     ...type.subtitle,

@@ -46,7 +46,7 @@ export function Skeleton({
 export function MatchScreenSkeleton() {
   return (
     <View style={styles.screen}>
-      <Skeleton height={340} radius={0} />
+      <Skeleton height={340} radius={radii.lg} style={{ marginHorizontal: spacing.xl, marginTop: spacing.lg }} />
       <View style={styles.body}>
         <Skeleton width={88} height={22} radius={radii.full} />
         <Skeleton height={28} />
@@ -69,7 +69,9 @@ export function MatchScreenSkeleton() {
 
 const styles = StyleSheet.create({
   base: {
-    backgroundColor: colors.surfaceRaised,
+    backgroundColor: colors.glass,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
   },
   screen: {
     flex: 1,

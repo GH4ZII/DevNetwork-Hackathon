@@ -14,8 +14,9 @@ import * as ImagePicker from "expo-image-picker";
 import { ApiError, getScan, getTryOn, postTryOn } from "../../lib/api";
 import { session } from "../../lib/session";
 import { GlassButton } from "../../components/GlassButton";
+import { GlassCard } from "../../components/GlassCard";
 import { PrimaryButton } from "../../components/PrimaryButton";
-import { colors, radii, spacing, type } from "../../components/theme";
+import { colors, radii, shadows, spacing, type } from "../../components/theme";
 import type { ProductCategory, ScanResult } from "../../types/realitylens";
 
 const demoSelfie = require("../../assets/demo/selfie.jpg");
@@ -233,7 +234,7 @@ export default function TryOnScreen() {
       <Text style={styles.title}>You found it.{"\n"}Now wear it.</Text>
       <Text style={styles.copy}>{hintFor(tryOnCategory, garmentCategory)}</Text>
 
-      <View style={styles.frameGuide}>
+      <GlassCard style={styles.frameGuide}>
         <FrameGuide
           tryOnCategory={tryOnCategory}
           garmentCategory={garmentCategory}
@@ -241,7 +242,7 @@ export default function TryOnScreen() {
         <Text style={styles.frameLabel}>
           {frameLabel(tryOnCategory, garmentCategory)}
         </Text>
-      </View>
+      </GlassCard>
 
       {userUri ? (
         <View style={styles.previewFrame}>
@@ -317,12 +318,6 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   frameGuide: {
-    backgroundColor: colors.surfaceRaised,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-    paddingVertical: spacing.xxl,
-    paddingHorizontal: spacing.xl,
     alignItems: "center",
     gap: spacing.lg,
   },
@@ -387,6 +382,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     backgroundColor: colors.surface,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    ...shadows.card,
   },
   preview: { width: "100%", height: "100%" },
   actions: { gap: spacing.md },

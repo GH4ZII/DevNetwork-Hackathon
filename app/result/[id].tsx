@@ -18,7 +18,7 @@ import { session } from "../../lib/session";
 import { BeforeAfterSlider } from "../../components/BeforeAfterSlider";
 import { GlassButton } from "../../components/GlassButton";
 import { PrimaryButton } from "../../components/PrimaryButton";
-import { colors, radii, spacing, type } from "../../components/theme";
+import { colors, radii, shadows, spacing, type } from "../../components/theme";
 
 export default function ResultScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -59,7 +59,9 @@ export default function ResultScreen() {
         <GlassButton
           label="Try another"
           onPress={() =>
-            scanId ? router.replace(`/try-on/${scanId}`) : router.replace("/")
+            scanId
+              ? router.replace(`/try-on/${scanId}`)
+              : router.replace("/(tabs)/camera")
           }
         />
       </View>
@@ -69,7 +71,7 @@ export default function ResultScreen() {
   if (!resultUrl) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.text} />
+        <ActivityIndicator color={colors.accent} />
       </View>
     );
   }
@@ -78,6 +80,7 @@ export default function ResultScreen() {
 
   return (
     <View style={[styles.screen, { paddingBottom: insets.bottom + spacing.lg }]}>
+      <View style={styles.glow} pointerEvents="none" />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[styles.scrollContent, { paddingTop: topPad }]}
@@ -112,7 +115,9 @@ export default function ResultScreen() {
             label="Try another"
             compact
             onPress={() =>
-              scanId ? router.replace(`/try-on/${scanId}`) : router.replace("/")
+              scanId
+                ? router.replace(`/try-on/${scanId}`)
+                : router.replace("/(tabs)/camera")
             }
             style={styles.flex}
           />
@@ -122,7 +127,7 @@ export default function ResultScreen() {
             onPress={() => {
               session.lastUserImageUri = undefined;
               session.lastResultImageUrl = undefined;
-              router.replace("/");
+              router.replace("/(tabs)/camera");
             }}
             style={styles.flex}
           />
@@ -136,6 +141,14 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.canvas,
+  },
+  glow: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 200,
+    backgroundColor: colors.gradientTop,
   },
   scroll: {
     flex: 1,
@@ -163,6 +176,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    ...shadows.card,
   },
   afterImage: {
     width: "100%",
@@ -170,13 +186,15 @@ const styles = StyleSheet.create({
   },
   bottom: {
     paddingHorizontal: spacing.xl,
-    paddingTop: spacing.sm,
+    paddingTop: spacing.md,
     gap: spacing.md,
-    backgroundColor: colors.canvas,
+    backgroundColor: colors.surfaceRaised,
+    borderTopWidth: 1,
+    borderTopColor: colors.glassBorder,
   },
   caption: {
     ...type.label,
-    color: colors.textMuted,
+    color: colors.accent,
     textTransform: "uppercase",
   },
   row: {

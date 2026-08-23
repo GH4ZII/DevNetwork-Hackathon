@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from "react-native";
 import { lightImpact } from "../lib/haptics";
-import { colors, radii, spacing, type } from "./theme";
+import { colors, radii, shadows, spacing, type } from "./theme";
 
 type Props = {
   label: string;
@@ -39,10 +39,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.xl,
-    borderRadius: radii.md,
+    borderRadius: radii.lg,
     alignItems: "center",
     justifyContent: "center",
     minHeight: 52,
+    ...shadows.card,
   },
   pressed: {
     opacity: 0.85,
