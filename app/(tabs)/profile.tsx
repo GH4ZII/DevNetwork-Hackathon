@@ -53,7 +53,7 @@ export default function ProfileScreen() {
                   <Ionicons
                     name={mode === "dark" ? "moon-outline" : "sunny-outline"}
                     size={20}
-                    color={colors.text}
+                    color={colors.accent}
                   />
                 </View>
                 <Text style={styles.settingLabel}>Appearance</Text>
@@ -70,7 +70,7 @@ export default function ProfileScreen() {
             <View style={styles.settingInner}>
               <View style={styles.settingLeft}>
                 <View style={styles.settingIcon}>
-                  <Ionicons name={item.icon} size={20} color={colors.text} />
+                  <Ionicons name={item.icon} size={20} color={colors.accent} />
                 </View>
                 <Text style={styles.settingLabel}>{item.label}</Text>
               </View>
@@ -141,8 +141,8 @@ function createStyles(colors: ThemeColors) {
     settingIcon: {
       width: 36,
       height: 36,
-      borderRadius: radii.sm,
-      backgroundColor: colors.surface,
+      borderRadius: radii.full,
+      backgroundColor: colors.accentMuted,
       alignItems: "center",
       justifyContent: "center",
     },

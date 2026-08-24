@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useMemo, useState } from "react";
 import {
   FlatList,
@@ -108,6 +109,12 @@ export default function SavedScreen() {
                   {looksLabel(item.steps.length)}
                 </Text>
               </View>
+              <Ionicons
+                name="chevron-forward"
+                size={18}
+                color={colors.textDim}
+                style={styles.chevron}
+              />
             </Pressable>
           );
         }}
@@ -124,10 +131,11 @@ function createStyles(colors: ThemeColors) {
     },
     card: {
       flexDirection: "row",
+      alignItems: "center",
       backgroundColor: colors.glass,
       borderWidth: 1,
       borderColor: colors.glassBorder,
-      borderRadius: radii.lg,
+      borderRadius: radii.xl,
       overflow: "hidden",
       ...shadows.card,
     },
@@ -152,6 +160,9 @@ function createStyles(colors: ThemeColors) {
     cardMeta: {
       ...type.caption,
       color: colors.textMuted,
+    },
+    chevron: {
+      marginRight: spacing.md,
     },
     pressed: {
       opacity: 0.9,

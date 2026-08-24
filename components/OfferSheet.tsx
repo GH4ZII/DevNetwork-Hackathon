@@ -72,6 +72,7 @@ export function OfferSheet({
             <View style={styles.actions}>
               {tryOnSupported ? (
                 <PrimaryButton
+                  icon="shirt-outline"
                   label="Try On"
                   onPress={() => {
                     lightImpact();
@@ -80,6 +81,7 @@ export function OfferSheet({
                 />
               ) : null}
               <GlassButton
+                icon="open-outline"
                 label="Visit site"
                 onPress={() => {
                   lightImpact();

@@ -13,6 +13,10 @@ export type ThemeColors = {
   textDim: string;
   primary: string;
   primaryText: string;
+  secondary: string;
+  secondaryText: string;
+  inverse: string;
+  inverseText: string;
   accent: string;
   accentMuted: string;
   gradientTop: string;
@@ -32,10 +36,14 @@ export const darkColors: ThemeColors = {
   text: "#FFFFFF",
   textMuted: "#B0B0B8",
   textDim: "#7A7A85",
-  primary: "#FFFFFF",
-  primaryText: "#141418",
-  accent: "#7C7FF2",
-  accentMuted: "rgba(124,127,242,0.22)",
+  primary: "#7B6EF6",
+  primaryText: "#FFFFFF",
+  secondary: "#2A2A30",
+  secondaryText: "#FFFFFF",
+  inverse: "#FFFFFF",
+  inverseText: "#141418",
+  accent: "#7B6EF6",
+  accentMuted: "rgba(123,110,246,0.22)",
   gradientTop: "rgba(99,102,241,0.12)",
   error: "#FF8A8A",
   success: "#8AFFB0",
@@ -53,8 +61,12 @@ export const lightColors: ThemeColors = {
   text: "#14151A",
   textMuted: "#5C5F6A",
   textDim: "#8B8E99",
-  primary: "#14151A",
-  primaryText: "#F2F3F7",
+  primary: "#4F46E5",
+  primaryText: "#FFFFFF",
+  secondary: "#E2E3EA",
+  secondaryText: "#14151A",
+  inverse: "#FFFFFF",
+  inverseText: "#14151A",
   accent: "#4F46E5",
   accentMuted: "rgba(79,70,229,0.15)",
   gradientTop: "rgba(0,0,0,0.03)",

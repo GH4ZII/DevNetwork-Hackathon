@@ -260,11 +260,13 @@ export default function TryOnScreen() {
         {usingSavedLook ? null : (
           <>
             <GlassButton
+              icon="camera-outline"
               label="Take photo"
               onPress={() => pick(true)}
               disabled={busy}
             />
             <GlassButton
+              icon="images-outline"
               label="Choose from gallery"
               onPress={() => pick(false)}
               disabled={busy}
@@ -272,6 +274,7 @@ export default function TryOnScreen() {
           </>
         )}
         <PrimaryButton
+          icon="sparkles-outline"
           label="Generate Try-On"
           onPress={generate}
           disabled={!userUri || busy}
@@ -290,6 +293,7 @@ export default function TryOnScreen() {
           <Text style={styles.error}>{error}</Text>
           {userUri ? (
             <GlassButton
+              icon="refresh-outline"
               label="Retry try-on"
               onPress={generate}
               disabled={busy}

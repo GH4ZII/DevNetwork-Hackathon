@@ -134,8 +134,16 @@ export default function CameraScreen() {
         <Text style={styles.permissionCopy}>
           RealityLens needs camera access to scan products.
         </Text>
-        <PrimaryButton label="Allow camera" onPress={requestPermission} />
-        <GlassButton label="Choose from gallery" onPress={pickFromGallery} />
+        <PrimaryButton
+          icon="camera-outline"
+          label="Allow camera"
+          onPress={requestPermission}
+        />
+        <GlassButton
+          icon="images-outline"
+          label="Choose from gallery"
+          onPress={pickFromGallery}
+        />
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </View>
     );
@@ -166,6 +174,7 @@ export default function CameraScreen() {
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <View style={styles.row}>
             <GlassButton
+              icon="refresh-outline"
               label="Retake"
               onPress={() => {
                 setImageUri(null);
@@ -173,7 +182,12 @@ export default function CameraScreen() {
               }}
               style={styles.flexBtn}
             />
-            <PrimaryButton label="Search" onPress={search} style={styles.flexBtn} />
+            <PrimaryButton
+              icon="search-outline"
+              label="Search"
+              onPress={search}
+              style={styles.flexBtn}
+            />
           </View>
         </View>
       </View>
@@ -220,7 +234,10 @@ export default function CameraScreen() {
         {capturing ? <Text style={styles.holdSteady}>Hold steady</Text> : null}
         <View style={styles.controls}>
           <Pressable style={styles.galleryBtn} onPress={pickFromGallery}>
-            <Text style={styles.galleryLabel}>Gallery</Text>
+            <View style={styles.galleryChip}>
+              <Ionicons name="images-outline" size={16} color={CAMERA_TEXT} />
+              <Text style={styles.galleryLabel}>Gallery</Text>
+            </View>
           </Pressable>
           <Pressable
             onPress={takePhoto}
@@ -390,19 +407,23 @@ function createStyles(colors: ThemeColors) {
       justifyContent: "space-between",
     },
     galleryBtn: {
-      width: 72,
+      minWidth: 72,
       alignItems: "center",
+    },
+    galleryChip: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.xs,
+      backgroundColor: "rgba(0,0,0,0.45)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.25)",
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: radii.full,
     },
     galleryLabel: {
       ...type.caption,
       color: CAMERA_TEXT,
-      backgroundColor: "rgba(0,0,0,0.45)",
-      borderWidth: 1,
-      borderColor: "rgba(255,255,255,0.25)",
-      overflow: "hidden",
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm,
-      borderRadius: radii.full,
     },
     flipBtn: {
       width: 44,

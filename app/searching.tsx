@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Animated, {
@@ -14,6 +14,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ApiError, postScan } from "../lib/api";
 import { session } from "../lib/session";
+import { GlassButton } from "../components/GlassButton";
 import { useTheme } from "../components/ThemeProvider";
 import { radii, spacing, type, type ThemeColors } from "../components/theme";
 
@@ -117,15 +118,14 @@ export default function SearchingScreen() {
       {error ? (
         <View style={styles.errorBlock}>
           <Text style={styles.error}>{error}</Text>
-          <Pressable
-            style={styles.backBtn}
+          <GlassButton
+            icon="camera-outline"
+            label="Back to camera"
             onPress={() => {
               session.pendingScanUri = undefined;
               router.replace("/(tabs)/camera");
             }}
-          >
-            <Text style={styles.backText}>Back to camera</Text>
-          </Pressable>
+          />
         </View>
       ) : (
         <Text style={styles.hint}>This usually takes a few seconds.</Text>

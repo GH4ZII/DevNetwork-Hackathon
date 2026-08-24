@@ -27,7 +27,7 @@ function createStyles(colors: ThemeColors) {
       backgroundColor: colors.glass,
       borderWidth: 1,
       borderColor: colors.glassBorder,
-      borderRadius: radii.lg,
+      borderRadius: radii.xl,
       ...shadows.card,
     },
     padded: {

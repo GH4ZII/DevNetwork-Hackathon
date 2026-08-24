@@ -263,7 +263,7 @@ function createStyles(colors: ThemeColors) {
       justifyContent: "center",
     },
     knobText: {
-      color: colors.primaryText,
+      color: colors.inverseText,
       fontWeight: "700",
       fontSize: 12,
     },

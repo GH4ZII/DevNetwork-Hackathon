@@ -77,7 +77,11 @@ export default function MatchScreen() {
     return (
       <View style={styles.centered}>
         <Text style={styles.error}>{error}</Text>
-        <GlassButton label="Scan again" onPress={() => router.replace("/(tabs)/camera")} />
+        <GlassButton
+          icon="camera-outline"
+          label="Scan again"
+          onPress={() => router.replace("/(tabs)/camera")}
+        />
       </View>
     );
   }
@@ -117,7 +121,11 @@ export default function MatchScreen() {
           We couldn't match this photo to a product. Try a clearer shot of the
           item with good lighting.
         </Text>
-        <GlassButton label="Scan again" onPress={() => router.replace("/(tabs)/camera")} />
+        <GlassButton
+          icon="camera-outline"
+          label="Scan again"
+          onPress={() => router.replace("/(tabs)/camera")}
+        />
       </View>
     );
   }
@@ -178,6 +186,7 @@ export default function MatchScreen() {
           <View style={styles.ctaRow}>
             {scan.tryOnSupported ? (
               <PrimaryButton
+                icon="shirt-outline"
                 label={
                   session.continueCollectionId ? "Try on this look" : "Try On"
                 }
@@ -192,6 +201,7 @@ export default function MatchScreen() {
             ) : null}
             {scan.offers.length > 0 ? (
               <GlassButton
+                icon="pricetag-outline"
                 label="View Deals"
                 onPress={viewDeals}
                 style={styles.ctaFlex}
@@ -280,7 +290,7 @@ function createStyles(colors: ThemeColors) {
     hero: {
       width: "100%",
       height: 320,
-      borderRadius: radii.lg,
+      borderRadius: radii.xl,
       backgroundColor: colors.surface,
       overflow: "hidden",
     },

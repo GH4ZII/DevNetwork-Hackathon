@@ -5,7 +5,6 @@ import {
   Dimensions,
   FlatList,
   Image,
-  Pressable,
   StyleSheet,
   Text,
   View,
@@ -13,14 +12,9 @@ import {
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BeforeAfterSlider } from "../../components/BeforeAfterSlider";
+import { PrimaryButton } from "../../components/PrimaryButton";
 import { useTheme } from "../../components/ThemeProvider";
-import {
-  radii,
-  shadows,
-  spacing,
-  type,
-  type ThemeColors,
-} from "../../components/theme";
+import { spacing, type, type ThemeColors } from "../../components/theme";
 import { lightImpact } from "../../lib/haptics";
 import {
   deleteCollection,
@@ -103,12 +97,12 @@ export default function LookScreen() {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
         <Text style={styles.error}>This look is no longer saved.</Text>
-        <Pressable
+        <PrimaryButton
+          icon="bookmark-outline"
+          variant="secondary"
+          label="Back to Saved"
           onPress={() => router.replace("/(tabs)/saved")}
-          style={styles.ghostBtn}
-        >
-          <Text style={styles.ghostLabel}>Back to Saved</Text>
-        </Pressable>
+        />
       </View>
     );
   }
@@ -179,38 +173,34 @@ export default function LookScreen() {
           </View>
         ) : null}
         <View style={styles.actions}>
-          <Pressable
+          <PrimaryButton
+            icon="add-outline"
+            compact
+            label="Add"
             onPress={addItem}
-            style={({ pressed }) => [
-              styles.addBtn,
-              pressed && styles.pressed,
-            ]}
-          >
-            <Text style={styles.addLabel}>Add</Text>
-          </Pressable>
+            style={styles.actionBtn}
+          />
           {step.shopUrl ? (
-            <Pressable
+            <PrimaryButton
+              icon="bag-outline"
+              variant="inverse"
+              compact
+              label="Shop"
               onPress={() => {
                 lightImpact();
                 openExternalUrl(step.shopUrl);
               }}
-              style={({ pressed }) => [
-                styles.ghostBtn,
-                pressed && styles.pressed,
-              ]}
-            >
-              <Text style={styles.ghostLabel}>Shop</Text>
-            </Pressable>
+              style={styles.actionBtn}
+            />
           ) : null}
-          <Pressable
+          <PrimaryButton
+            icon="trash-outline"
+            variant="secondary"
+            compact
+            label="Delete"
             onPress={confirmDelete}
-            style={({ pressed }) => [
-              styles.ghostBtn,
-              pressed && styles.pressed,
-            ]}
-          >
-            <Text style={styles.ghostLabel}>Delete</Text>
-          </Pressable>
+            style={styles.actionBtn}
+          />
         </View>
       </View>
     </View>
@@ -273,40 +263,9 @@ function createStyles(colors: ThemeColors) {
       gap: spacing.sm,
       marginTop: spacing.sm,
     },
-    addBtn: {
-      flex: 1.4,
-      height: 44,
-      borderRadius: radii.full,
-      backgroundColor: colors.primary,
-      alignItems: "center",
-      justifyContent: "center",
-      ...shadows.card,
-    },
-    addLabel: {
-      ...type.caption,
-      color: colors.primaryText,
-      fontWeight: "700",
-      fontSize: 14,
-    },
-    ghostBtn: {
+    actionBtn: {
       flex: 1,
-      height: 44,
-      borderRadius: radii.full,
-      backgroundColor: colors.glass,
-      borderWidth: 1,
-      borderColor: colors.glassBorder,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    ghostLabel: {
-      ...type.caption,
-      color: colors.text,
-      fontWeight: "600",
-      fontSize: 13,
-    },
-    pressed: {
-      opacity: 0.85,
-      transform: [{ scale: 0.98 }],
+      minWidth: 0,
     },
     centered: {
       flex: 1,

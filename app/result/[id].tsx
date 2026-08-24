@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
-  Pressable,
   StyleSheet,
   Text,
   View,
@@ -12,7 +11,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ApiError, getTryOn } from "../../lib/api";
-import { lightImpact, successNotify } from "../../lib/haptics";
+import { successNotify } from "../../lib/haptics";
 import {
   appendStep,
   createCollection,
@@ -21,15 +20,11 @@ import {
 import { openExternalUrl } from "../../lib/openUrl";
 import { clearContinueLook, session } from "../../lib/session";
 import { BeforeAfterSlider } from "../../components/BeforeAfterSlider";
-import { GlassButton } from "../../components/GlassButton";
+import { InfoCard } from "../../components/InfoCard";
+import { PrimaryButton } from "../../components/PrimaryButton";
+import { ScreenHeader } from "../../components/ScreenHeader";
 import { useTheme } from "../../components/ThemeProvider";
-import {
-  radii,
-  shadows,
-  spacing,
-  type,
-  type ThemeColors,
-} from "../../components/theme";
+import { radii, spacing, type, type ThemeColors } from "../../components/theme";
 
 export default function ResultScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -123,7 +118,12 @@ export default function ResultScreen() {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
         <Text style={styles.error}>{error}</Text>
-        <GlassButton label="Try another" onPress={tryAgain} />
+        <PrimaryButton
+          icon="refresh-outline"
+          variant="secondary"
+          label="Try another"
+          onPress={tryAgain}
+        />
       </View>
     );
   }
@@ -138,112 +138,86 @@ export default function ResultScreen() {
 
   return (
     <View style={styles.screen}>
-      <Animated.View
-        entering={FadeIn.duration(400)}
-        style={[styles.media, { paddingTop: insets.top }]}
-      >
-        {userUri ? (
-          <BeforeAfterSlider
-            beforeUri={userUri}
-            afterUri={resultUrl}
-            fill
-            style={styles.slider}
-          />
-        ) : (
-          <Image
-            source={{ uri: resultUrl }}
-            style={styles.afterImage}
-            resizeMode="contain"
-          />
-        )}
+      <View style={{ paddingTop: insets.top + spacing.sm, paddingHorizontal: spacing.lg }}>
+        <ScreenHeader
+          title="Your look"
+          subtitle="See the try-on on you"
+          onBack={() => (router.canGoBack() ? router.back() : tryAgain())}
+        />
+      </View>
+
+      <Animated.View entering={FadeIn.duration(400)} style={styles.media}>
+        <View style={styles.mediaFrame}>
+          {userUri ? (
+            <BeforeAfterSlider
+              beforeUri={userUri}
+              afterUri={resultUrl}
+              fill
+              style={styles.slider}
+            />
+          ) : (
+            <Image
+              source={{ uri: resultUrl }}
+              style={styles.afterImage}
+              resizeMode="contain"
+            />
+          )}
+        </View>
       </Animated.View>
 
       <View
         style={[
           styles.dock,
-          {
-            paddingBottom: Math.max(insets.bottom, spacing.md),
-          },
+          { paddingBottom: Math.max(insets.bottom, spacing.md) },
         ]}
       >
+        <InfoCard
+          icon="sparkles"
+          title="AI try-on"
+          description="Only the scanned item region is changed. The rest of you stays the same."
+        />
         {saveError ? <Text style={styles.saveError}>{saveError}</Text> : null}
-        <View style={styles.saveRow}>
-          <Pressable
-            onPress={() => {
-              lightImpact();
-              void saveLook();
-            }}
-            disabled={saving || saved}
-            style={({ pressed }) => [
-              styles.saveBtn,
-              saved && styles.saveBtnDone,
-              pressed && !saved && styles.pressed,
-            ]}
-          >
-            {saving ? (
-              <ActivityIndicator color={colors.primaryText} />
-            ) : (
-              <Text style={[styles.saveLabel, saved && styles.saveLabelDone]}>
-                {saved ? "Saved" : "Save"}
-              </Text>
-            )}
-          </Pressable>
-          {savedCollectionId ? (
-            <Pressable
-              onPress={() => {
-                lightImpact();
-                router.push(`/look/${savedCollectionId}`);
-              }}
-              style={({ pressed }) => [
-                styles.ghostBtn,
-                pressed && styles.pressed,
-              ]}
-            >
-              <Text style={styles.ghostLabel}>View look</Text>
-            </Pressable>
-          ) : null}
-        </View>
+        {saved ? (
+          <PrimaryButton
+            icon="images-outline"
+            label="View look"
+            onPress={() => router.push(`/look/${savedCollectionId}`)}
+          />
+        ) : (
+          <PrimaryButton
+            icon="download-outline"
+            label="Save"
+            loading={saving}
+            onPress={() => void saveLook()}
+          />
+        )}
         <View style={styles.actions}>
-          <Pressable
-            onPress={() => {
-              lightImpact();
-              tryAgain();
-            }}
-            style={({ pressed }) => [
-              styles.ghostBtn,
-              pressed && styles.pressed,
-            ]}
-          >
-            <Text style={styles.ghostLabel}>Retry</Text>
-          </Pressable>
-
+          <PrimaryButton
+            icon="refresh-outline"
+            variant="secondary"
+            compact
+            label="Retry"
+            onPress={tryAgain}
+            style={styles.actionBtn}
+          />
           {shopUrl ? (
-            <Pressable
-              onPress={() => {
-                lightImpact();
-                openExternalUrl(shopUrl);
-              }}
-              style={({ pressed }) => [
-                styles.shopBtn,
-                pressed && styles.pressed,
-              ]}
-            >
-              <Text style={styles.shopLabel}>Shop</Text>
-            </Pressable>
+            <PrimaryButton
+              icon="sparkles-outline"
+              variant="inverse"
+              compact
+              label="Shop"
+              onPress={() => openExternalUrl(shopUrl)}
+              style={styles.actionBtn}
+            />
           ) : null}
-
-          <Pressable
-            onPress={() => {
-              lightImpact();
-              newScan();
-            }}
-            style={({ pressed }) => [
-              styles.ghostBtn,
-              pressed && styles.pressed,
-            ]}
-          >
-            <Text style={styles.ghostLabel}>New scan</Text>
-          </Pressable>
+          <PrimaryButton
+            icon="scan-outline"
+            variant="secondary"
+            compact
+            label="New scan"
+            onPress={newScan}
+            style={styles.actionBtn}
+          />
         </View>
       </View>
     </View>
@@ -258,7 +232,14 @@ function createStyles(colors: ThemeColors) {
     },
     media: {
       flex: 1,
-      width: "100%",
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.md,
+    },
+    mediaFrame: {
+      flex: 1,
+      borderRadius: radii.xl,
+      overflow: "hidden",
+      backgroundColor: colors.surface,
     },
     slider: {
       flex: 1,
@@ -266,89 +247,27 @@ function createStyles(colors: ThemeColors) {
     afterImage: {
       flex: 1,
       width: "100%",
-      backgroundColor: colors.canvas,
+      backgroundColor: colors.surface,
     },
     dock: {
       paddingHorizontal: spacing.lg,
       paddingTop: spacing.sm,
       backgroundColor: colors.canvas,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: colors.glassBorder,
+      gap: spacing.md,
     },
     saveError: {
       ...type.caption,
       color: colors.error,
       textAlign: "center",
-      marginBottom: spacing.xs,
-    },
-    saveRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing.sm,
-      marginBottom: spacing.sm,
-    },
-    saveBtn: {
-      flex: 1.4,
-      height: 44,
-      borderRadius: radii.full,
-      backgroundColor: colors.accent,
-      alignItems: "center",
-      justifyContent: "center",
-      ...shadows.card,
-    },
-    saveBtnDone: {
-      backgroundColor: colors.glass,
-      borderWidth: 1,
-      borderColor: colors.glassBorder,
-    },
-    saveLabel: {
-      ...type.caption,
-      color: "#FFFFFF",
-      fontWeight: "700",
-      fontSize: 14,
-    },
-    saveLabelDone: {
-      color: colors.text,
     },
     actions: {
       flexDirection: "row",
       alignItems: "center",
       gap: spacing.sm,
     },
-    shopBtn: {
-      flex: 1.4,
-      height: 44,
-      borderRadius: radii.full,
-      backgroundColor: colors.primary,
-      alignItems: "center",
-      justifyContent: "center",
-      ...shadows.card,
-    },
-    shopLabel: {
-      ...type.caption,
-      color: colors.primaryText,
-      fontWeight: "700",
-      fontSize: 14,
-    },
-    ghostBtn: {
+    actionBtn: {
       flex: 1,
-      height: 44,
-      borderRadius: radii.full,
-      backgroundColor: colors.glass,
-      borderWidth: 1,
-      borderColor: colors.glassBorder,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    ghostLabel: {
-      ...type.caption,
-      color: colors.text,
-      fontWeight: "600",
-      fontSize: 13,
-    },
-    pressed: {
-      opacity: 0.85,
-      transform: [{ scale: 0.98 }],
+      minWidth: 0,
     },
     centered: {
       flex: 1,

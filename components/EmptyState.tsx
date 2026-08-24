@@ -36,10 +36,20 @@ export function EmptyState({
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.description}>{description}</Text>
       {actionLabel && onAction ? (
-        <PrimaryButton label={actionLabel} onPress={onAction} style={styles.btn} />
+        <PrimaryButton
+          icon="camera-outline"
+          label={actionLabel}
+          onPress={onAction}
+          style={styles.btn}
+        />
       ) : null}
       {secondaryLabel && onSecondary ? (
-        <GlassButton label={secondaryLabel} onPress={onSecondary} style={styles.btn} />
+        <GlassButton
+          icon="arrow-back-outline"
+          label={secondaryLabel}
+          onPress={onSecondary}
+          style={styles.btn}
+        />
       ) : null}
     </View>
   );

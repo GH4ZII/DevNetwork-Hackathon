@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GlassCard } from "../../components/GlassCard";
+import { InfoCard } from "../../components/InfoCard";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { ScreenShell } from "../../components/ScreenShell";
@@ -85,6 +86,7 @@ export default function HomeScreen() {
           ))}
         </View>
         <PrimaryButton
+          icon="camera-outline"
           label="Open camera"
           onPress={() => router.push("/(tabs)/camera")}
           style={styles.heroBtn}
@@ -94,17 +96,12 @@ export default function HomeScreen() {
       <Text style={styles.sectionTitle}>Tips for best results</Text>
       <View style={styles.tips}>
         {TIPS.map((tip) => (
-          <GlassCard key={tip.title} style={styles.tipCard}>
-            <View style={styles.tipRow}>
-              <View style={styles.tipIcon}>
-                <Ionicons name={tip.icon} size={20} color={colors.text} />
-              </View>
-              <View style={styles.tipBody}>
-                <Text style={styles.tipTitle}>{tip.title}</Text>
-                <Text style={styles.tipCopy}>{tip.copy}</Text>
-              </View>
-            </View>
-          </GlassCard>
+          <InfoCard
+            key={tip.title}
+            icon={tip.icon}
+            title={tip.title}
+            description={tip.copy}
+          />
         ))}
       </View>
     </ScreenShell>
@@ -133,7 +130,7 @@ function createStyles(colors: ThemeColors) {
     showcase: {
       flexDirection: "row",
       height: 160,
-      borderRadius: radii.lg,
+      borderRadius: radii.xl,
       overflow: "hidden",
       marginBottom: spacing.lg,
       gap: 3,
@@ -213,36 +210,6 @@ function createStyles(colors: ThemeColors) {
     },
     tips: {
       gap: spacing.md,
-    },
-    tipCard: {
-      padding: spacing.md,
-    },
-    tipRow: {
-      flexDirection: "row",
-      gap: spacing.md,
-      alignItems: "flex-start",
-    },
-    tipIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: radii.sm,
-      backgroundColor: colors.surface,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    tipBody: {
-      flex: 1,
-      gap: 2,
-    },
-    tipTitle: {
-      ...type.subtitle,
-      fontSize: 15,
-      color: colors.text,
-      fontWeight: "600",
-    },
-    tipCopy: {
-      ...type.caption,
-      color: colors.textMuted,
     },
   });
 }

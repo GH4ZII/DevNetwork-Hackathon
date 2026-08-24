@@ -61,7 +61,7 @@ function createStyles(colors: ThemeColors) {
       flexDirection: "row",
       gap: spacing.md,
       backgroundColor: colors.glass,
-      borderRadius: radii.lg,
+      borderRadius: radii.xl,
       padding: spacing.md,
       borderWidth: 1,
       borderColor: colors.glassBorder,
