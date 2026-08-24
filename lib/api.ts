@@ -1,4 +1,5 @@
 import Constants from "expo-constants";
+import { deviceCountry } from "./region";
 import type { ScanResult, TryOnResult } from "../types/realitylens";
 
 export class ApiError extends Error {
@@ -170,6 +171,7 @@ async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
 export async function postScan(imageUri: string): Promise<ScanResult> {
   const form = new FormData();
   form.append("image", imagePart(imageUri, "scan.jpg"));
+  form.append("country", deviceCountry());
   const response = await apiFetch("/api/scan", {
     method: "POST",
     body: form,

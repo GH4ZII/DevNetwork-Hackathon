@@ -17,15 +17,23 @@ export function hashImageBytes(bytes: Buffer): string {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-export function getCachedScan(imageHash: string): {
+function cacheKey(imageHash: string, country: string): string {
+  return `${imageHash}:${country}`;
+}
+
+export function getCachedScan(
+  imageHash: string,
+  country: string,
+): {
   result: ScanResult;
   productImageUrl?: string;
 } | undefined {
-  const entry = cache.get(imageHash);
+  const key = cacheKey(imageHash, country);
+  const entry = cache.get(key);
   if (!entry) return undefined;
 
   if (Date.now() - entry.createdAt > TTL_MS) {
-    cache.delete(imageHash);
+    cache.delete(key);
     return undefined;
   }
 
@@ -47,6 +55,7 @@ export function getCachedScan(imageHash: string): {
 
 export function setCachedScan(
   imageHash: string,
+  country: string,
   result: ScanResult,
   productImageUrl?: string,
 ): void {
@@ -56,7 +65,7 @@ export function setCachedScan(
   }
 
   const now = Date.now();
-  cache.set(imageHash, {
+  cache.set(cacheKey(imageHash, country), {
     result: {
       ...result,
       bestMatch: result.bestMatch ? { ...result.bestMatch } : null,

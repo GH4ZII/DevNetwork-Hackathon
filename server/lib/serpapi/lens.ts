@@ -41,12 +41,15 @@ export async function searchGoogleLens(
   apiKey: string,
   imageId: string,
   type: GoogleLensType,
+  locale?: { country: string; hl: string },
 ): Promise<GoogleLensResponse> {
   const raw = await serpApiGet({
     engine: "google_lens",
     image_id: imageId,
     type,
     api_key: apiKey,
+    ...(locale?.country ? { country: locale.country } : {}),
+    ...(locale?.hl ? { hl: locale.hl } : {}),
   });
   const body = coerceLensResponse(raw);
 

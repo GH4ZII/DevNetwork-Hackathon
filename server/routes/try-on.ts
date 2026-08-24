@@ -135,13 +135,9 @@ tryOnRoutes.post("/api/try-on", async (c) => {
       });
     }
 
-    const garmentText = [
-      stored.result.bestMatch?.title,
-      ...stored.result.offers.slice(0, 5).map((offer) => offer.title),
-    ]
-      .filter(Boolean)
-      .join(" ");
-    const garmentCategory = toGarmentCategory(category, garmentText);
+    const garmentCategory =
+      stored.result.garmentCategory ??
+      toGarmentCategory(category, stored.result.bestMatch?.title ?? "");
     if (!garmentCategory) {
       return c.json(
         { error: "Could not map this product to a try-on garment type." },

@@ -9,6 +9,10 @@ import {
   hashImageBytes,
   setCachedScan,
 } from "../lib/scan-cache.ts";
+import {
+  languageForCountry,
+  normalizeCountry,
+} from "../lib/locale/markets.ts";
 import { uploadSerpApiImage } from "../lib/serpapi/image-upload.ts";
 import { searchGoogleLens } from "../lib/serpapi/lens.ts";
 import { normalizeScanResult } from "../lib/serpapi/normalize.ts";
@@ -21,6 +25,8 @@ scanRoutes.post("/api/scan", async (c) => {
   try {
     const body = await c.req.parseBody();
     const image = await readUpload(body.image, "image");
+    const country = normalizeCountry(asString(body.country));
+    const hl = languageForCountry(country);
 
     if (isFixtureMode()) {
       const result = assertScanResult(loadScanFixture());
@@ -37,9 +43,9 @@ scanRoutes.post("/api/scan", async (c) => {
 
     const compressed = await compressForSerpApi(image);
     const imageHash = hashImageBytes(compressed);
-    const cached = getCachedScan(imageHash);
+    const cached = getCachedScan(imageHash, country);
     if (cached) {
-      console.log("[cache] scan hit", imageHash.slice(0, 12));
+      console.log("[cache] scan hit", imageHash.slice(0, 12), country);
       const result = assertScanResult(cached.result);
       saveScan({
         scanId: result.scanId,
@@ -52,15 +58,18 @@ scanRoutes.post("/api/scan", async (c) => {
 
     const apiKey = getSerpApiKey();
     const uploaded = await uploadSerpApiImage(apiKey, compressed);
+    const locale = { country, hl };
     const [visual, products] = await Promise.all([
-      searchGoogleLens(apiKey, uploaded.image_id, "visual_matches"),
-      searchGoogleLens(apiKey, uploaded.image_id, "products"),
+      searchGoogleLens(apiKey, uploaded.image_id, "visual_matches", locale),
+      searchGoogleLens(apiKey, uploaded.image_id, "products", locale),
     ]);
-    const result = assertScanResult(normalizeScanResult(visual, products));
+    const result = assertScanResult(
+      normalizeScanResult(visual, products, country),
+    );
     const productImageUrl =
       result.bestMatch?.imageUrl ?? result.offers[0]?.imageUrl;
 
-    setCachedScan(imageHash, result, productImageUrl);
+    setCachedScan(imageHash, country, result, productImageUrl);
     saveScan({
       scanId: result.scanId,
       result,

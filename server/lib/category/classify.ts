@@ -25,7 +25,7 @@ const RULES: Array<{ category: ProductCategory; pattern: RegExp }> = [
   {
     category: "clothes",
     pattern:
-      /\b(shirt|jacket|hoodie|dress|pants|jeans|coat|sweater|tee|t-shirt|blouse|skirt|shorts|suit|outerwear|apparel|clothing|top|cardigan|vest|pullover|crewneck|polo|trousers|leggings|jumpsuit|romper|gown|overalls?|chino|blazer|parka|windbreaker|sweatshirt)\b/i,
+      /\b(shirt|jacket|hoodie|dress|pants|jeans|coat|sweater|tee|t-shirt|blouse|skirt|shorts|suit|outerwear|apparel|clothing|top|cardigan|vest|pullover|crewneck|polo|trousers|leggings|jumpsuit|romper|gown|overalls?|chino|blazer|parka|windbreaker|sweatshirt)\b|skjorte|bluse|genser|hettegenser|bukse|skjørt|joggebukse|kjole|jakke|kåpe/i,
   },
   {
     category: "ring",
@@ -56,14 +56,21 @@ const TRY_ON_CATEGORIES = new Set<ProductCategory>([
 ]);
 
 const LOWER_BODY =
-  /\b(pants|jeans|trousers|shorts|skirt|leggings|chinos?|sweatpants|joggers|culottes)\b/i;
+  /\b(pants|jeans|trousers|shorts|skirt|leggings|chinos?|sweatpants|joggers|culottes)\b|bukse|bukser|skjørt|joggebukse/i;
 const FULL_BODY =
-  /\b(dress|jumpsuit|romper|suit|tuxedo|gown|overalls?|onesie|bodysuit)\b/i;
+  /\b(dress|jumpsuit|romper|suit|tuxedo|gown|overalls?|onesie|bodysuit)\b|kjole|kjoler/i;
 /** Jackets/coats: Perfect Corp cloth-v4 outerwear swaps only the outer layer. */
 const OUTERWEAR =
-  /\b(jacket|jackets|coat|coats|blazer|blazers|parka|parkas|windbreaker|vest|vests|outerwear)\b/i;
+  /\b(jacket|jackets|coat|coats|blazer|blazers|parka|parkas|windbreaker|vest|vests|outerwear)\b|jakke|jakker|kåpe|kåper|ytterjakke/i;
 const UPPER_BODY =
-  /\b(shirt|hoodie|sweater|tee|t-shirt|blouse|top|cardigan|pullover|crewneck|polo|sweatshirt|tank|camisole)\b/i;
+  /\b(shirt|hoodie|sweater|tee|t-shirt|blouse|top|cardigan|pullover|crewneck|polo|sweatshirt|tank|camisole)\b|skjorte|skjorter|bluse|bluser|genser|gensere|hettegenser/i;
+
+const GARMENT_PATTERNS: Array<{ category: GarmentCategory; pattern: RegExp }> = [
+  { category: "full_body", pattern: FULL_BODY },
+  { category: "outerwear", pattern: OUTERWEAR },
+  { category: "upper_body", pattern: UPPER_BODY },
+  { category: "lower_body", pattern: LOWER_BODY },
+];
 
 export function classifyCategory(text: string): ProductCategory {
   const haystack = text.trim();
@@ -96,11 +103,23 @@ export function toGarmentCategory(
   if (category !== "clothes") return null;
 
   const haystack = text.trim();
-  if (LOWER_BODY.test(haystack)) return "lower_body";
-  if (FULL_BODY.test(haystack)) return "full_body";
-  if (OUTERWEAR.test(haystack)) return "outerwear";
-  if (UPPER_BODY.test(haystack)) return "upper_body";
-  return "auto";
+  if (!haystack) return "auto";
+  return leftmostGarment(haystack);
+}
+
+function leftmostGarment(text: string): GarmentCategory {
+  let bestIndex = Infinity;
+  let best: GarmentCategory = "auto";
+
+  for (const { category, pattern } of GARMENT_PATTERNS) {
+    const match = new RegExp(pattern.source, pattern.flags).exec(text);
+    if (match && match.index < bestIndex) {
+      bestIndex = match.index;
+      best = category;
+    }
+  }
+
+  return best;
 }
 
 export function tryOnPhotoGuide(
