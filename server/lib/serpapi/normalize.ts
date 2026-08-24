@@ -33,7 +33,7 @@ export function normalizeScanResult(
     .map((match) => toOffer(match, country))
     .filter((offer): offer is Offer => offer !== null)
     .sort((a, b) => compareOffers(a, b, country, marketCurrency));
-  if (bestMatch) attachMatchPrice(bestMatch, offers);
+  if (bestMatch) attachMatchPrice(bestMatch, offers, country);
   const hasProduct = Boolean(bestMatch || offers.length > 0);
   const supported = hasProduct && isTryOnSupported(category);
   const garmentCategory = supported
@@ -75,14 +75,120 @@ function toProductMatch(
   };
 }
 
-function attachMatchPrice(match: ProductMatch, offers: Offer[]): void {
-  const linked = match.url
-    ? offers.find((offer) => sameListing(offer.url, match.url))
-    : undefined;
-  if (!linked?.priceText && linked?.priceValue == null) return;
-  match.priceText = linked.priceText ?? match.priceText;
-  match.priceValue = linked.priceValue ?? match.priceValue;
-  match.currency = linked.currency ?? match.currency;
+function attachMatchPrice(
+  match: ProductMatch,
+  offers: Offer[],
+  country: string,
+): void {
+  if (match.priceText || match.priceValue != null) return;
+
+  const linked = findRelatedOffer(match, offers);
+  if (linked) {
+    match.priceText = linked.priceText;
+    match.priceValue = linked.priceValue;
+    match.currency = linked.currency;
+    return;
+  }
+
+  const priced = offers.filter(
+    (offer) => offer.priceText || offer.priceValue != null,
+  );
+  if (priced.length === 0) return;
+
+  const marketCurrency = currencyForCountry(country);
+  const inMarket = priced.filter((offer) => offer.currency === marketCurrency);
+  const pool = inMarket.length > 0 ? inMarket : priced;
+  const lowest = pool.reduce((a, b) =>
+    (a.priceValue ?? Infinity) <= (b.priceValue ?? Infinity) ? a : b,
+  );
+  const formatted =
+    lowest.priceText ??
+    formatOfferPrice(lowest.priceValue, lowest.currency, country);
+  if (!formatted) return;
+  match.priceText = formatted.startsWith("From ")
+    ? formatted
+    : `From ${formatted}`;
+  match.priceValue = lowest.priceValue;
+  match.currency = lowest.currency;
+}
+
+function findRelatedOffer(
+  match: ProductMatch,
+  offers: Offer[],
+): Offer | undefined {
+  const priced = offers.filter(
+    (offer) => offer.priceText || offer.priceValue != null,
+  );
+  if (priced.length === 0) return undefined;
+
+  const byUrl = priced.find((offer) => sameListing(offer.url, match.url));
+  if (byUrl) return byUrl;
+
+  const merchant = normalizeMerchant(match.source);
+  if (merchant) {
+    const sameStore = priced.filter(
+      (offer) => normalizeMerchant(offer.merchant) === merchant,
+    );
+    const titled = sameStore.find((offer) =>
+      titlesOverlap(match.title, offer.title),
+    );
+    if (titled) return titled;
+    if (sameStore[0]) return sameStore[0];
+  }
+
+  return priced.find((offer) => titlesOverlap(match.title, offer.title));
+}
+
+function normalizeMerchant(value?: string): string | undefined {
+  if (!value) return undefined;
+  const cleaned = value
+    .toLowerCase()
+    .replace(/\.(com|no|se|dk|de|co\.uk|net|org)$/i, "")
+    .replace(/[^a-z0-9]+/g, "");
+  return cleaned || undefined;
+}
+
+function titlesOverlap(a: string, b: string): boolean {
+  const left = significantTokens(a);
+  const right = significantTokens(b);
+  if (left.size === 0 || right.size === 0) return false;
+  let hits = 0;
+  for (const token of left) {
+    if (right.has(token)) hits += 1;
+  }
+  return hits >= 2 || (left.size === 1 && hits === 1);
+}
+
+function significantTokens(text: string): Set<string> {
+  const stop = new Set([
+    "the",
+    "and",
+    "for",
+    "with",
+    "from",
+    "by",
+    "dark",
+    "red",
+    "blue",
+    "black",
+    "white",
+    "grey",
+    "gray",
+    "green",
+    "size",
+    "men",
+    "women",
+    "mens",
+    "womens",
+  ]);
+  return new Set(
+    text
+      .toLowerCase()
+      .replace(/[^a-z0-9æøåäöü\s-]/gi, " ")
+      .split(/[\s-]+/)
+      .map((token) => token.trim())
+      .filter((token) => token.length >= 3 && !stop.has(token)),
+  );
 }
 
 function sameListing(a?: string, b?: string): boolean {
@@ -139,13 +245,16 @@ function parsePrice(
 } {
   if (typeof match.price === "string") {
     const text = match.price.trim() || undefined;
+    const value =
+      typeof match.extracted_price === "number"
+        ? match.extracted_price
+        : undefined;
     return {
       text,
-      value:
-        typeof match.extracted_price === "number"
-          ? match.extracted_price
-          : undefined,
-      currency: inferCurrency(text, country),
+      value,
+      currency:
+        inferCurrency(text, country) ??
+        (value != null ? currencyForCountry(country) : undefined),
     };
   }
 
@@ -164,15 +273,19 @@ function parsePrice(
           ? match.price.currency
           : undefined,
         country,
-      ) ?? inferCurrency(text, country);
+      ) ??
+      inferCurrency(text, country) ??
+      (value != null ? currencyForCountry(country) : undefined);
     return { text: text || undefined, value, currency };
   }
 
+  const value =
+    typeof match.extracted_price === "number"
+      ? match.extracted_price
+      : undefined;
   return {
-    value:
-      typeof match.extracted_price === "number"
-        ? match.extracted_price
-        : undefined,
+    value,
+    currency: value != null ? currencyForCountry(country) : undefined,
   };
 }
 

@@ -140,12 +140,13 @@ export function formatOfferPrice(
   country: string,
   fallback?: string,
 ): string | undefined {
-  if (typeof value === "number" && currency) {
+  if (typeof value === "number") {
+    const code = currency || currencyForCountry(country);
     const locale = COUNTRY_LOCALE[country] ?? "nb-NO";
     try {
       return new Intl.NumberFormat(locale, {
         style: "currency",
-        currency,
+        currency: code,
         maximumFractionDigits: value % 1 === 0 ? 0 : 2,
       }).format(value);
     } catch {

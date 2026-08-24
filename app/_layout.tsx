@@ -70,6 +70,14 @@ function RootNavigator() {
           name="result/[id]"
           options={{ title: "Reveal", headerShown: false }}
         />
+        <Stack.Screen
+          name="look/[id]"
+          options={{
+            title: "Look",
+            headerBackTitle: "Back",
+            headerBackButtonDisplayMode: "minimal",
+          }}
+        />
       </Stack>
     </GestureHandlerRootView>
   );

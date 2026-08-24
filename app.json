@@ -7,9 +7,23 @@
     "scheme": "realitylens",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#141418",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#141418"
+    },
     "newArchEnabled": true,
     "plugins": [
       "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#141418",
+          "image": "./assets/icon.png",
+          "imageWidth": 200
+        }
+      ],
       [
         "expo-camera",
         {
@@ -27,6 +41,7 @@
       "expo-font"
     ],
     "ios": {
+      "icon": "./assets/icon.png",
       "bundleIdentifier": "com.realitylens.app",
       "supportsTablet": true,
       "infoPlist": {
@@ -36,6 +51,10 @@
       }
     },
     "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#141418"
+      },
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"

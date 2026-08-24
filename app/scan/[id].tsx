@@ -178,7 +178,9 @@ export default function MatchScreen() {
           <View style={styles.ctaRow}>
             {scan.tryOnSupported ? (
               <PrimaryButton
-                label="Try On"
+                label={
+                  session.continueCollectionId ? "Try on this look" : "Try On"
+                }
                 onPress={() =>
                   startTryOn(
                     match?.imageUrl ?? scan.offers[0]?.imageUrl,

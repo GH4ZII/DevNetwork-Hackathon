@@ -25,7 +25,7 @@ const RULES: Array<{ category: ProductCategory; pattern: RegExp }> = [
   {
     category: "clothes",
     pattern:
-      /\b(shirt|jacket|hoodie|dress|pants|jeans|coat|sweater|tee|t-shirt|blouse|skirt|shorts|suit|outerwear|apparel|clothing|top|cardigan|vest|pullover|crewneck|polo|trousers|leggings|jumpsuit|romper|gown|overalls?|chino|blazer|parka|windbreaker|sweatshirt)\b|skjorte|bluse|genser|hettegenser|bukse|skjørt|joggebukse|kjole|jakke|kåpe/i,
+      /\b(shirt|jacket|hoodie|dress|pants|jeans|coat|sweater|jumper|jumpers|tee|t-shirt|blouse|skirt|shorts|suit|outerwear|apparel|clothing|top|cardigan|vest|pullover|crewneck|polo|trousers|leggings|jumpsuit|romper|gown|overalls?|chino|blazer|parka|windbreaker|sweatshirt|knitwear|turtleneck|fleece)\b|skjorte|bluse|genser|hettegenser|bukse|skjørt|joggebukse|kjole|jakke|kåpe/i,
   },
   {
     category: "ring",
@@ -63,7 +63,7 @@ const FULL_BODY =
 const OUTERWEAR =
   /\b(jacket|jackets|coat|coats|blazer|blazers|parka|parkas|windbreaker|vest|vests|outerwear)\b|jakke|jakker|kåpe|kåper|ytterjakke/i;
 const UPPER_BODY =
-  /\b(shirt|hoodie|sweater|tee|t-shirt|blouse|top|cardigan|pullover|crewneck|polo|sweatshirt|tank|camisole)\b|skjorte|skjorter|bluse|bluser|genser|gensere|hettegenser/i;
+  /\b(shirt|hoodie|sweater|jumper|jumpers|tee|t-shirt|blouse|top|cardigan|pullover|crewneck|polo|sweatshirt|tank|camisole|knitwear|turtleneck|fleece)\b|skjorte|skjorter|bluse|bluser|genser|gensere|hettegenser/i;
 
 const GARMENT_PATTERNS: Array<{ category: GarmentCategory; pattern: RegExp }> = [
   { category: "full_body", pattern: FULL_BODY },

@@ -23,7 +23,7 @@ import { PrimaryButton } from "../../components/PrimaryButton";
 import { useTheme } from "../../components/ThemeProvider";
 import { radii, spacing, type, type ThemeColors } from "../../components/theme";
 import { lightImpact, mediumImpact } from "../../lib/haptics";
-import { session } from "../../lib/session";
+import { clearContinueLook, session } from "../../lib/session";
 
 const CAMERA_TEXT = "#FFFFFF";
 
@@ -45,10 +45,18 @@ export default function CameraScreen() {
     transform: [{ scale: shutterScale.value }],
   }));
 
+  const addingToLook = Boolean(session.continueCollectionId);
+
   function goBack() {
     lightImpact();
     setImageUri(null);
     setError(null);
+    if (session.continueCollectionId) {
+      const lookId = session.continueCollectionId;
+      clearContinueLook();
+      router.replace(`/look/${lookId}`);
+      return;
+    }
     router.replace("/(tabs)/home");
   }
 
@@ -145,6 +153,15 @@ export default function CameraScreen() {
         >
           <Ionicons name="chevron-back" size={22} color={CAMERA_TEXT} />
         </Pressable>
+        {addingToLook ? (
+          <View
+            style={[styles.continueBanner, { top: insets.top + spacing.md + 48 }]}
+          >
+            <Text style={styles.continueBannerText}>
+              Adding to this look — scan the next item
+            </Text>
+          </View>
+        ) : null}
         <View style={[styles.bottomBar, { paddingBottom: insets.bottom + spacing.lg }]}>
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <View style={styles.row}>
@@ -188,6 +205,15 @@ export default function CameraScreen() {
       >
         <Ionicons name="chevron-back" size={22} color={CAMERA_TEXT} />
       </Pressable>
+      {addingToLook ? (
+        <View
+          style={[styles.continueBanner, { top: insets.top + spacing.md + 48 }]}
+        >
+          <Text style={styles.continueBannerText}>
+            Adding to this look — scan the next item
+          </Text>
+        </View>
+      ) : null}
 
       <View style={[styles.bottomBar, { paddingBottom: insets.bottom + spacing.xl }]}>
         {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -241,6 +267,24 @@ function createStyles(colors: ThemeColors) {
       padding: spacing.xl,
       gap: spacing.lg,
       justifyContent: "center",
+    },
+    continueBanner: {
+      position: "absolute",
+      left: spacing.xl,
+      right: spacing.xl,
+      zIndex: 10,
+      backgroundColor: "rgba(0,0,0,0.55)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.25)",
+      borderRadius: radii.full,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+    },
+    continueBannerText: {
+      ...type.caption,
+      color: CAMERA_TEXT,
+      textAlign: "center",
+      fontWeight: "600",
     },
     backBtn: {
       position: "absolute",

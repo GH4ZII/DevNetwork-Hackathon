@@ -11,6 +11,7 @@ import { ScreenShell } from "../../components/ScreenShell";
 import { useTheme } from "../../components/ThemeProvider";
 import { radii, spacing, type, type ThemeColors } from "../../components/theme";
 
+const appLogo = require("../../assets/logo.png");
 const demoShoe = require("../../assets/demo/shoes.jpg");
 const demoSelfie = require("../../assets/demo/selfie.jpg");
 
@@ -46,7 +47,10 @@ export default function HomeScreen() {
 
   return (
     <ScreenShell scroll contentStyle={{ paddingTop: insets.top + spacing.lg }}>
-      <Text style={styles.kicker}>RealityLens</Text>
+      <View style={styles.brandRow}>
+        <Image source={appLogo} style={styles.brandLogo} />
+        <Text style={styles.kicker}>RealityLens</Text>
+      </View>
       <ScreenHeader title="Scan anything. Try it on." />
 
       <View style={styles.showcase}>
@@ -109,11 +113,22 @@ export default function HomeScreen() {
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
+    brandRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      marginBottom: spacing.xs,
+    },
+    brandLogo: {
+      width: 36,
+      height: 36,
+      borderRadius: radii.sm,
+    },
     kicker: {
       ...type.label,
       color: colors.accent,
       textTransform: "uppercase",
-      marginBottom: spacing.xs,
+      marginBottom: 0,
     },
     showcase: {
       flexDirection: "row",

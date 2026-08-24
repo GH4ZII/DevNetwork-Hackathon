@@ -101,6 +101,7 @@ export default function TryOnScreen() {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState(null);
   const [error, setError] = useState(null);
+  const [usingSavedLook] = useState(Boolean(session.continueBaseImageUri));
   const generateEpoch = useRef(0);
 
   useEffect(() => {
@@ -110,20 +111,29 @@ export default function TryOnScreen() {
   }, []);
 
   useEffect(() => {
+    if (session.continueBaseImageUri) {
+      setUserUri(session.continueBaseImageUri);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!id) return;
     getScan(id)
       .then((scan) => {
-        setProductImageUrl(
+        const productImage =
           session.pendingTryOnImageUrl ??
-            scan.bestMatch?.imageUrl ??
-            scan.offers[0]?.imageUrl,
-        );
+          scan.bestMatch?.imageUrl ??
+          scan.offers[0]?.imageUrl;
+        setProductImageUrl(productImage);
         setTryOnCategory(scan.tryOnCategory ?? scan.bestMatch?.category);
         setGarmentCategory(scan.garmentCategory);
         session.lastShopUrl =
           session.lastShopUrl ??
           scan.bestMatch?.url ??
           scan.offers[0]?.url;
+        session.lastProductTitle = scan.bestMatch?.title;
+        session.lastProductImageUrl = productImage;
+        session.lastGarmentCategory = scan.garmentCategory;
       })
       .catch(() => undefined);
   }, [id]);
@@ -219,7 +229,11 @@ export default function TryOnScreen() {
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.copy}>{hintFor(tryOnCategory, garmentCategory)}</Text>
+      <Text style={styles.copy}>
+        {usingSavedLook
+          ? "Using your saved look. Generate to add this item."
+          : hintFor(tryOnCategory, garmentCategory)}
+      </Text>
 
       {userUri ? (
         <View style={styles.previewFrame}>
@@ -243,16 +257,20 @@ export default function TryOnScreen() {
       )}
 
       <View style={styles.actions}>
-        <GlassButton
-          label="Take photo"
-          onPress={() => pick(true)}
-          disabled={busy}
-        />
-        <GlassButton
-          label="Choose from gallery"
-          onPress={() => pick(false)}
-          disabled={busy}
-        />
+        {usingSavedLook ? null : (
+          <>
+            <GlassButton
+              label="Take photo"
+              onPress={() => pick(true)}
+              disabled={busy}
+            />
+            <GlassButton
+              label="Choose from gallery"
+              onPress={() => pick(false)}
+              disabled={busy}
+            />
+          </>
+        )}
         <PrimaryButton
           label="Generate Try-On"
           onPress={generate}
