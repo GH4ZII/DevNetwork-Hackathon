@@ -31,17 +31,25 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Allow RealityLens to take product and try-on photos.",
-        "NSPhotoLibraryUsageDescription": "Allow RealityLens to pick product and try-on photos."
+        "NSPhotoLibraryUsageDescription": "Allow RealityLens to pick product and try-on photos.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "permissions": [
-        "CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ],
       "usesCleartextTraffic": true
     },
     "experiments": {
       "typedRoutes": false
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e0cc5cf4-a8b2-4c4a-babc-1cd12c25fe3a"
+      }
     }
   }
 }

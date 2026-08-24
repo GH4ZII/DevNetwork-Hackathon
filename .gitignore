@@ -24,8 +24,7 @@ ios/
 .env.*
 !.env.example
 
-# Personal / generated demo assets
-assets/demo/selfie.*
+# Generated demo assets (selfie.jpg is required by Metro for EAS builds)
 assets/demo/try-on-result.*
 
 # Debug / logs
