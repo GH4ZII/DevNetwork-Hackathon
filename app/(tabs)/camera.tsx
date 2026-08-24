@@ -38,6 +38,7 @@ export default function CameraScreen() {
   const [error, setError] = useState(null);
   const [capturing, setCapturing] = useState(false);
   const [flashOn, setFlashOn] = useState(false);
+  const [facing, setFacing] = useState("back");
   const shutterScale = useSharedValue(1);
 
   const shutterStyle = useAnimatedStyle(() => ({
@@ -100,6 +101,12 @@ export default function CameraScreen() {
     router.push("/searching");
   }
 
+  function flipCamera() {
+    if (capturing) return;
+    lightImpact();
+    setFacing((prev) => (prev === "back" ? "front" : "back"));
+  }
+
   if (!permission) {
     return <View style={styles.screen} />;
   }
@@ -158,7 +165,7 @@ export default function CameraScreen() {
 
   return (
     <View style={styles.screen}>
-      <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
+      <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing={facing} />
       <View style={[styles.vignetteTop, { height: insets.top + 80 }]} pointerEvents="none" />
       <View style={[styles.vignetteBottom, { height: insets.bottom + 160 }]} pointerEvents="none" />
 
@@ -204,7 +211,17 @@ export default function CameraScreen() {
               <View style={styles.shutterInner} />
             </Animated.View>
           </Pressable>
-          <View style={styles.galleryBtn} />
+          <Pressable
+            style={styles.galleryBtn}
+            onPress={flipCamera}
+            disabled={capturing}
+            accessibilityRole="button"
+            accessibilityLabel="Flip camera"
+          >
+            <View style={styles.flipBtn}>
+              <Ionicons name="camera-reverse-outline" size={22} color={CAMERA_TEXT} />
+            </View>
+          </Pressable>
         </View>
       </View>
     </View>
@@ -342,6 +359,16 @@ function createStyles(colors: ThemeColors) {
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
       borderRadius: radii.full,
+    },
+    flipBtn: {
+      width: 44,
+      height: 44,
+      borderRadius: radii.full,
+      backgroundColor: "rgba(0,0,0,0.45)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.25)",
+      alignItems: "center",
+      justifyContent: "center",
     },
     shutterHit: {
       alignItems: "center",

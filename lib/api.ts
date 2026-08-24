@@ -38,9 +38,7 @@ function normalizeUrl(raw: string): string | undefined {
   }
 
   try {
-    const url = new URL(candidate);
-    if (!url.port) url.port = "8081";
-    return url.origin;
+    return new URL(candidate).origin;
   } catch {
     return undefined;
   }
@@ -48,15 +46,18 @@ function normalizeUrl(raw: string): string | undefined {
 
 function apiBaseUrls(): string[] {
   const urls: string[] = [];
+
+  const fromEnv = normalizeUrl(process.env.EXPO_PUBLIC_API_URL ?? "");
+  if (fromEnv) urls.push(fromEnv);
+
   const host = expoHost();
   if (host) {
     const ip = host.split(":")[0];
-    urls.push(`http://${host}`);
-    urls.push(`http://${ip}:3000`);
+    const metro = `http://${host}`;
+    const direct = `http://${ip}:3000`;
+    if (!urls.includes(metro)) urls.push(metro);
+    if (!urls.includes(direct)) urls.push(direct);
   }
-
-  const fromEnv = normalizeUrl(process.env.EXPO_PUBLIC_API_URL ?? "");
-  if (fromEnv && !urls.includes(fromEnv)) urls.push(fromEnv);
 
   if (urls.length === 0) {
     urls.push("http://localhost:8081", "http://localhost:3000");

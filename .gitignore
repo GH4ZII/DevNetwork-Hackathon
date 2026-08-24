@@ -42,3 +42,6 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+
+# Local QA notes
+TESTLISTE.md
