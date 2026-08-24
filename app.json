@@ -27,6 +27,7 @@
       "expo-font"
     ],
     "ios": {
+      "bundleIdentifier": "com.realitylens.app",
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Allow RealityLens to take product and try-on photos.",
