@@ -4,6 +4,10 @@ export type Session = {
   lastShopUrl?: string;
   lastResultImageUrl?: string;
   pendingScanUri?: string;
+  pendingTryOnImageUrl?: string;
 };
+
+export const session: Session = {};
+
 
 export const session: Session = {};

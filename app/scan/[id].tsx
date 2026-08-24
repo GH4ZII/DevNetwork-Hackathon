@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,12 +11,15 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { ApiError, getScan } from "../../lib/api";
+import { lightImpact } from "../../lib/haptics";
+import { openExternalUrl } from "../../lib/openUrl";
 import { session } from "../../lib/session";
 import { GlassButton } from "../../components/GlassButton";
 import { GlassCard } from "../../components/GlassCard";
 import { MatchLabelBadge } from "../../components/MatchLabelBadge";
 import { MerchantCard } from "../../components/MerchantCard";
 import { PrimaryButton } from "../../components/PrimaryButton";
+import { OfferSheet } from "../../components/OfferSheet";
 import { PriceFrom } from "../../components/PriceFrom";
 import { MatchScreenSkeleton } from "../../components/Skeleton";
 import { useTheme } from "../../components/ThemeProvider";
@@ -38,6 +42,7 @@ export default function MatchScreen() {
   const [error, setError] = useState(null);
   const [dealsY, setDealsY] = useState(0);
   const [heroIndex, setHeroIndex] = useState(0);
+  const [selectedOffer, setSelectedOffer] = useState(null);
 
   useEffect(() => {
     if (!id) return;
@@ -92,6 +97,18 @@ export default function MatchScreen() {
     setHeroIndex((i) => i + 1);
   }
 
+  function openBestMatch() {
+    if (!match?.url) return;
+    lightImpact();
+    void openExternalUrl(match.url);
+  }
+
+  function startTryOn(imageUrl?: string, shopUrl?: string) {
+    session.pendingTryOnImageUrl = imageUrl;
+    session.lastShopUrl = shopUrl ?? session.lastShopUrl;
+    router.push(`/try-on/${scan.scanId}`);
+  }
+
   if (empty) {
     return (
       <View style={styles.centered}>
@@ -106,25 +123,28 @@ export default function MatchScreen() {
   }
 
   return (
+    <View style={styles.page}>
     <ScrollView
       ref={scrollRef}
       contentContainerStyle={styles.screen}
       showsVerticalScrollIndicator={false}
     >
       <Animated.View entering={FadeIn.duration(320)} style={styles.heroWrap}>
-        {heroUri ? (
-          <Image
-            key={heroUri}
-            source={{ uri: heroUri }}
-            style={styles.hero}
-            resizeMode="cover"
-            onError={onHeroError}
-          />
-        ) : (
-          <View style={[styles.hero, styles.heroEmpty]}>
-            <Text style={styles.meta}>No product image</Text>
-          </View>
-        )}
+        <Pressable onPress={openBestMatch} disabled={!match?.url}>
+          {heroUri ? (
+            <Image
+              key={heroUri}
+              source={{ uri: heroUri }}
+              style={styles.hero}
+              resizeMode="cover"
+              onError={onHeroError}
+            />
+          ) : (
+            <View style={[styles.hero, styles.heroEmpty]}>
+              <Text style={styles.meta}>No product image</Text>
+            </View>
+          )}
+        </Pressable>
       </Animated.View>
 
       <Animated.View
@@ -132,12 +152,22 @@ export default function MatchScreen() {
         style={styles.heroBody}
       >
         <GlassCard style={styles.infoCard}>
-          <MatchLabelBadge label={match?.label} />
-          <Text style={styles.title}>{match?.title ?? "Similar products"}</Text>
-          {match?.category ? (
-            <Text style={styles.category}>{formatCategory(match.category)}</Text>
-          ) : null}
-          <PriceFrom offers={scan.offers} />
+          <Pressable
+            onPress={openBestMatch}
+            disabled={!match?.url}
+            style={styles.matchHit}
+          >
+            <MatchLabelBadge label={match?.label} />
+            <Text style={styles.title}>
+              {match?.title ?? "Similar products"}
+            </Text>
+            {match?.category ? (
+              <Text style={styles.category}>
+                {formatCategory(match.category)}
+              </Text>
+            ) : null}
+            <PriceFrom match={match} offers={scan.offers} />
+          </Pressable>
 
           {!match ? (
             <Text style={styles.meta}>
@@ -149,7 +179,12 @@ export default function MatchScreen() {
             {scan.tryOnSupported ? (
               <PrimaryButton
                 label="Try On"
-                onPress={() => router.push(`/try-on/${scan.scanId}`)}
+                onPress={() =>
+                  startTryOn(
+                    match?.imageUrl ?? scan.offers[0]?.imageUrl,
+                    match?.url ?? scan.offers[0]?.url,
+                  )
+                }
                 style={styles.ctaFlex}
               />
             ) : null}
@@ -179,16 +214,40 @@ export default function MatchScreen() {
           <Text style={styles.meta}>No shopping results for this match.</Text>
         ) : (
           scan.offers.slice(0, 8).map((offer) => (
-            <MerchantCard key={offer.id} offer={offer} />
+            <MerchantCard
+              key={offer.id}
+              offer={offer}
+              onPress={() => {
+                setSelectedOffer(offer);
+              }}
+            />
           ))
         )}
       </View>
     </ScrollView>
+    <OfferSheet
+      offer={selectedOffer}
+      tryOnSupported={scan.tryOnSupported}
+      onClose={() => setSelectedOffer(null)}
+      onTryOn={(offer) => {
+        setSelectedOffer(null);
+        startTryOn(offer.imageUrl, offer.url);
+      }}
+      onVisit={(offer) => {
+        setSelectedOffer(null);
+        void openExternalUrl(offer.url);
+      }}
+    />
+    </View>
   );
 }
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
+    page: {
+      flex: 1,
+      backgroundColor: colors.canvas,
+    },
     screen: {
       paddingBottom: spacing.xxxl,
       backgroundColor: colors.canvas,
@@ -232,6 +291,9 @@ function createStyles(colors: ThemeColors) {
       paddingTop: spacing.lg,
     },
     infoCard: {
+      gap: spacing.sm,
+    },
+    matchHit: {
       gap: spacing.sm,
     },
     title: {

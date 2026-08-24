@@ -5,6 +5,8 @@ import {
   StyleSheet,
   Text,
   View,
+  type StyleProp,
+  type ViewStyle,
 } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -24,8 +26,10 @@ import { radii, spacing, type, type ThemeColors } from "./theme";
 type Props = {
   beforeUri: string;
   afterUri: string;
+  /** Fit the comparison inside the parent bounds instead of growing with aspect ratio. */
+  fill?: boolean;
+  style?: StyleProp<ViewStyle>;
 };
-
 
 function loadAspect(uri: string): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -37,10 +41,32 @@ function loadAspect(uri: string): Promise<number> {
   });
 }
 
-export function BeforeAfterSlider({ beforeUri, afterUri }: Props) {
+function fitContain(
+  aspect: number,
+  maxW: number,
+  maxH: number,
+): { width: number; height: number } {
+  if (maxW <= 0 || maxH <= 0 || aspect <= 0) {
+    return { width: 0, height: 0 };
+  }
+  let width = maxW;
+  let height = width / aspect;
+  if (height > maxH) {
+    height = maxH;
+    width = height * aspect;
+  }
+  return { width, height };
+}
+
+export function BeforeAfterSlider({
+  beforeUri,
+  afterUri,
+  fill = false,
+  style,
+}: Props) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const [containerWidth, setContainerWidth] = useState(0);
+  const [bounds, setBounds] = useState({ width: 0, height: 0 });
   const [beforeAspect, setBeforeAspect] = useState(0);
   const widthSv = useSharedValue(0);
   const position = useSharedValue(0.5);
@@ -52,7 +78,6 @@ export function BeforeAfterSlider({ beforeUri, afterUri }: Props) {
     if (afterUri) void Image.prefetch(afterUri);
   }, [beforeUri, afterUri]);
 
-  // Size the frame from the user's photo so the full body (incl. head) is preserved.
   useEffect(() => {
     let cancelled = false;
     setBeforeAspect(0);
@@ -78,16 +103,23 @@ export function BeforeAfterSlider({ beforeUri, afterUri }: Props) {
   }, [beforeUri, afterUri]);
 
   function onLayout(e: LayoutChangeEvent) {
-    const { width } = e.nativeEvent.layout;
-    setContainerWidth(width);
+    const { width, height } = e.nativeEvent.layout;
+    setBounds({ width, height });
   }
 
-  const width = containerWidth;
-  const height = beforeAspect > 0 ? width / beforeAspect : 0;
+  const frame =
+    beforeAspect > 0
+      ? fill
+        ? fitContain(beforeAspect, bounds.width, bounds.height)
+        : {
+            width: bounds.width,
+            height: bounds.width > 0 ? bounds.width / beforeAspect : 0,
+          }
+      : { width: 0, height: 0 };
 
   useEffect(() => {
-    if (width <= 0) return;
-    widthSv.value = width;
+    if (frame.width <= 0) return;
+    widthSv.value = frame.width;
     if (!swept.current) {
       swept.current = true;
       position.value = 0.2;
@@ -99,7 +131,7 @@ export function BeforeAfterSlider({ beforeUri, afterUri }: Props) {
         ),
       );
     }
-  }, [width, height, position, widthSv]);
+  }, [frame.width, frame.height, position, widthSv]);
 
   const pan = Gesture.Pan()
     .onBegin(() => {
@@ -128,19 +160,28 @@ export function BeforeAfterSlider({ beforeUri, afterUri }: Props) {
     transform: [{ translateX: widthSv.value * position.value - 18 }],
   }));
 
-  const { width: frameWidth, height: frameHeight } = { width, height };
-
   return (
-    <View style={styles.outer} onLayout={onLayout}>
-      {frameWidth > 0 && frameHeight > 0 ? (
-        <View style={[styles.frame, { width: frameWidth, height: frameHeight }]}>
+    <View
+      style={[styles.outer, fill && styles.outerFill, style]}
+      onLayout={onLayout}
+    >
+      {frame.width > 0 && frame.height > 0 ? (
+        <View
+          style={[
+            styles.frame,
+            fill && styles.frameFill,
+            { width: frame.width, height: frame.height },
+          ]}
+        >
           <Image
             source={{ uri: afterUri }}
             style={StyleSheet.absoluteFill}
             resizeMode="contain"
           />
-          <Animated.View style={[styles.beforeClip, clipStyle, { height: frameHeight }]}>
-            <View style={{ width: frameWidth, height: frameHeight }}>
+          <Animated.View
+            style={[styles.beforeClip, clipStyle, { height: frame.height }]}
+          >
+            <View style={{ width: frame.width, height: frame.height }}>
               <Image
                 source={{ uri: beforeUri }}
                 style={StyleSheet.absoluteFill}
@@ -149,7 +190,9 @@ export function BeforeAfterSlider({ beforeUri, afterUri }: Props) {
             </View>
           </Animated.View>
           <GestureDetector gesture={pan}>
-            <Animated.View style={[styles.handle, handleStyle, { height: frameHeight }]}>
+            <Animated.View
+              style={[styles.handle, handleStyle, { height: frame.height }]}
+            >
               <View style={styles.line} />
               <View style={styles.knob}>
                 <Text style={styles.knobText}>‹ ›</Text>
@@ -173,14 +216,23 @@ function createStyles(colors: ThemeColors) {
     outer: {
       width: "100%",
       alignItems: "center",
+      justifyContent: "center",
       backgroundColor: colors.surface,
       borderRadius: radii.lg,
+    },
+    outerFill: {
+      flex: 1,
+      borderRadius: 0,
+      backgroundColor: colors.canvas,
     },
     frame: {
       position: "relative",
       overflow: "hidden",
       backgroundColor: colors.canvas,
       borderRadius: radii.md,
+    },
+    frameFill: {
+      borderRadius: 0,
     },
     beforeClip: {
       position: "absolute",

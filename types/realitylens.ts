@@ -20,6 +20,9 @@ export interface ProductMatch {
   imageUrl?: string;
   source?: string;
   url?: string;
+  priceText?: string;
+  priceValue?: number;
+  currency?: string;
   label: MatchLabel;
 }
 

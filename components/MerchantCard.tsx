@@ -1,22 +1,26 @@
 import { useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { openExternalUrl } from "../lib/openUrl";
+import { lightImpact } from "../lib/haptics";
 import { useTheme } from "./ThemeProvider";
 import { radii, shadows, spacing, type, type ThemeColors } from "./theme";
 import type { Offer } from "../types/realitylens";
 
 type Props = {
   offer: Offer;
+  onPress: () => void;
 };
 
-export function MerchantCard({ offer }: Props) {
+export function MerchantCard({ offer, onPress }: Props) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <Pressable
       style={styles.card}
-      onPress={() => openExternalUrl(offer.url)}
+      onPress={() => {
+        lightImpact();
+        onPress();
+      }}
     >
       {offer.imageUrl ? (
         <Image source={{ uri: offer.imageUrl }} style={styles.thumb} />

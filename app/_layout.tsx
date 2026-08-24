@@ -32,12 +32,16 @@ function RootNavigator() {
           headerTintColor: colors.text,
           headerTitleStyle: { fontWeight: "700", fontFamily: "Inter_700Bold" },
           headerShadowVisible: false,
-          headerBackTitleVisible: false,
+          headerBackTitle: "Back",
+          headerBackButtonDisplayMode: "minimal",
           contentStyle: { backgroundColor: colors.canvas },
           animation: "fade_from_bottom",
         }}
       >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="(tabs)"
+          options={{ headerShown: false, title: "Home" }}
+        />
         <Stack.Screen
           name="index"
           options={{ headerShown: false, animation: "fade" }}
@@ -46,8 +50,22 @@ function RootNavigator() {
           name="searching"
           options={{ headerShown: false, animation: "fade" }}
         />
-        <Stack.Screen name="scan/[id]" options={{ title: "Match" }} />
-        <Stack.Screen name="try-on/[id]" options={{ title: "Try On" }} />
+        <Stack.Screen
+          name="scan/[id]"
+          options={{
+            title: "Match",
+            headerBackTitle: "Back",
+            headerBackButtonDisplayMode: "minimal",
+          }}
+        />
+        <Stack.Screen
+          name="try-on/[id]"
+          options={{
+            title: "Try On",
+            headerBackTitle: "Back",
+            headerBackButtonDisplayMode: "minimal",
+          }}
+        />
         <Stack.Screen
           name="result/[id]"
           options={{ title: "Reveal", headerShown: false }}

@@ -159,6 +159,9 @@ function assertProductMatch(value: unknown): ProductMatch {
     imageUrl: asNonEmptyString(value.imageUrl),
     source: asNonEmptyString(value.source),
     url: asNonEmptyString(value.url),
+    priceText: asNonEmptyString(value.priceText),
+    priceValue: typeof value.priceValue === "number" ? value.priceValue : undefined,
+    currency: asNonEmptyString(value.currency),
     label,
   };
 }

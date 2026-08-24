@@ -2,59 +2,64 @@ import { useMemo } from "react";
 import { StyleSheet, Text } from "react-native";
 import { useTheme } from "./ThemeProvider";
 import { type, type ThemeColors } from "./theme";
-import type { Offer } from "../types/realitylens";
+import type { Offer, ProductMatch } from "../types/realitylens";
 import {
-  currencyForCountry,
   deviceCountry,
   formatMoney,
   normalizeCurrencyCode,
 } from "../lib/region";
 
 type Props = {
-  offers: Offer[];
+  match?: ProductMatch | null;
+  offers?: Offer[];
 };
 
-export function lowestPriceText(offers: Offer[]): string | null {
-  if (!offers.length) return null;
-
-  const country = deviceCountry();
-  const market = currencyForCountry(country);
-  const priced = offers
-    .map((offer) => ({
-      offer,
-      currency: normalizeCurrencyCode(offer.currency, country),
-    }))
-    .filter(
-      (row) =>
-        typeof row.offer.priceValue === "number" &&
-        !Number.isNaN(row.offer.priceValue),
-    );
-
-  const inMarket = priced.filter((row) => row.currency === market);
-  const pool = inMarket.length > 0 ? inMarket : priced;
-
-  if (pool.length > 0) {
-    const lowest = pool.reduce((a, b) =>
-      (a.offer.priceValue ?? Infinity) <= (b.offer.priceValue ?? Infinity)
-        ? a
-        : b,
-    );
-    if (lowest.currency && typeof lowest.offer.priceValue === "number") {
-      return formatMoney(lowest.offer.priceValue, lowest.currency, country);
-    }
-    if (lowest.offer.priceText) return lowest.offer.priceText;
+export function matchPriceText(
+  match?: ProductMatch | null,
+  offers: Offer[] = [],
+): string | null {
+  if (match?.priceText) return match.priceText;
+  if (match && typeof match.priceValue === "number") {
+    const country = deviceCountry();
+    const currency = normalizeCurrencyCode(match.currency, country);
+    if (currency) return formatMoney(match.priceValue, currency, country);
   }
 
-  const withText = offers.find((o) => o.priceText);
-  return withText?.priceText ?? null;
+  const linked = match?.url
+    ? offers.find((offer) => sameListing(offer.url, match.url))
+    : undefined;
+  if (linked?.priceText) return linked.priceText;
+  if (linked && typeof linked.priceValue === "number") {
+    const country = deviceCountry();
+    const currency = normalizeCurrencyCode(linked.currency, country);
+    if (currency) return formatMoney(linked.priceValue, currency, country);
+  }
+
+  return null;
 }
 
-export function PriceFrom({ offers }: Props) {
+function sameListing(a?: string, b?: string): boolean {
+  if (!a || !b) return false;
+  return listingKey(a) === listingKey(b);
+}
+
+function listingKey(raw: string): string {
+  try {
+    const url = new URL(raw);
+    const host = url.hostname.replace(/^www\./i, "").toLowerCase();
+    const path = url.pathname.replace(/\/+$/, "") || "/";
+    return `${host}${path}`;
+  } catch {
+    return raw;
+  }
+}
+
+export function PriceFrom({ match, offers = [] }: Props) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const price = lowestPriceText(offers);
+  const price = matchPriceText(match, offers);
   if (!price) return null;
-  return <Text style={styles.price}>From {price}</Text>;
+  return <Text style={styles.price}>{price}</Text>;
 }
 
 function createStyles(colors: ThemeColors) {

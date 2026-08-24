@@ -33,6 +33,7 @@ export function normalizeScanResult(
     .map((match) => toOffer(match, country))
     .filter((offer): offer is Offer => offer !== null)
     .sort((a, b) => compareOffers(a, b, country, marketCurrency));
+  if (bestMatch) attachMatchPrice(bestMatch, offers);
   const hasProduct = Boolean(bestMatch || offers.length > 0);
   const supported = hasProduct && isTryOnSupported(category);
   const garmentCategory = supported
@@ -59,6 +60,7 @@ function toProductMatch(
   country: string,
 ): ProductMatch {
   const url = asUrl(match.link);
+  const price = parsePrice(match, country);
   return {
     id: `match_${typeof match.position === "number" ? match.position : 1}`,
     title: safeTitle(match.title).trim() || "Unknown product",
@@ -66,8 +68,39 @@ function toProductMatch(
     imageUrl: asUrl(match.image) ?? asUrl(match.thumbnail),
     source: typeof match.source === "string" ? match.source : undefined,
     url: url ? localizeUrl(url, country) : undefined,
+    priceText: formatOfferPrice(price.value, price.currency, country, price.text),
+    priceValue: price.value,
+    currency: price.currency,
     label: match.position === 1 ? "best_match" : "similar",
   };
+}
+
+function attachMatchPrice(match: ProductMatch, offers: Offer[]): void {
+  const linked = match.url
+    ? offers.find((offer) => sameListing(offer.url, match.url))
+    : undefined;
+  if (!linked?.priceText && linked?.priceValue == null) return;
+  match.priceText = linked.priceText ?? match.priceText;
+  match.priceValue = linked.priceValue ?? match.priceValue;
+  match.currency = linked.currency ?? match.currency;
+}
+
+function sameListing(a?: string, b?: string): boolean {
+  if (!a || !b) return false;
+  const left = listingKey(a);
+  const right = listingKey(b);
+  return Boolean(left && right && left === right);
+}
+
+function listingKey(raw: string): string | undefined {
+  try {
+    const url = new URL(raw);
+    const host = url.hostname.replace(/^www\./i, "").toLowerCase();
+    const path = url.pathname.replace(/\/+$/, "") || "/";
+    return `${host}${path}`;
+  } catch {
+    return undefined;
+  }
 }
 
 function toOffer(match: LensVisualMatch, country: string): Offer | null {

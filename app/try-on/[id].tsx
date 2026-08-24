@@ -113,10 +113,17 @@ export default function TryOnScreen() {
     if (!id) return;
     getScan(id)
       .then((scan) => {
-        setProductImageUrl(scan.bestMatch?.imageUrl ?? scan.offers[0]?.imageUrl);
+        setProductImageUrl(
+          session.pendingTryOnImageUrl ??
+            scan.bestMatch?.imageUrl ??
+            scan.offers[0]?.imageUrl,
+        );
         setTryOnCategory(scan.tryOnCategory ?? scan.bestMatch?.category);
         setGarmentCategory(scan.garmentCategory);
-        session.lastShopUrl = scan.bestMatch?.url ?? scan.offers[0]?.url;
+        session.lastShopUrl =
+          session.lastShopUrl ??
+          scan.bestMatch?.url ??
+          scan.offers[0]?.url;
       })
       .catch(() => undefined);
   }, [id]);

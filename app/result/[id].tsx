@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
-  ScrollView,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -12,14 +12,19 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ApiError, getTryOn } from "../../lib/api";
-import { successNotify } from "../../lib/haptics";
+import { lightImpact, successNotify } from "../../lib/haptics";
 import { openExternalUrl } from "../../lib/openUrl";
 import { session } from "../../lib/session";
 import { BeforeAfterSlider } from "../../components/BeforeAfterSlider";
 import { GlassButton } from "../../components/GlassButton";
-import { PrimaryButton } from "../../components/PrimaryButton";
 import { useTheme } from "../../components/ThemeProvider";
-import { radii, shadows, spacing, type, type ThemeColors } from "../../components/theme";
+import {
+  radii,
+  shadows,
+  spacing,
+  type,
+  type ThemeColors,
+} from "../../components/theme";
 
 export default function ResultScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -55,18 +60,23 @@ export default function ResultScreen() {
     if (resultUrl) successNotify();
   }, [resultUrl]);
 
+  function tryAgain() {
+    scanId
+      ? router.replace(`/try-on/${scanId}`)
+      : router.replace("/(tabs)/camera");
+  }
+
+  function newScan() {
+    session.lastUserImageUri = undefined;
+    session.lastResultImageUrl = undefined;
+    router.replace("/(tabs)/camera");
+  }
+
   if (error) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
         <Text style={styles.error}>{error}</Text>
-        <GlassButton
-          label="Try another"
-          onPress={() =>
-            scanId
-              ? router.replace(`/try-on/${scanId}`)
-              : router.replace("/(tabs)/camera")
-          }
-        />
+        <GlassButton label="Try another" onPress={tryAgain} />
       </View>
     );
   }
@@ -79,61 +89,77 @@ export default function ResultScreen() {
     );
   }
 
-  const topPad = insets.top + spacing.md;
-
   return (
-    <View style={[styles.screen, { paddingBottom: insets.bottom + spacing.lg }]}>
-      <View style={styles.glow} pointerEvents="none" />
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: topPad }]}
-        showsVerticalScrollIndicator={false}
-        bounces={false}
+    <View style={styles.screen}>
+      <Animated.View
+        entering={FadeIn.duration(400)}
+        style={[styles.media, { paddingTop: insets.top }]}
       >
-        <Animated.View entering={FadeIn.duration(400)} style={styles.sliderArea}>
-          {userUri ? (
-            <BeforeAfterSlider beforeUri={userUri} afterUri={resultUrl} />
-          ) : (
-            <View style={styles.afterOnly}>
-              <Image
-                source={{ uri: resultUrl }}
-                style={styles.afterImage}
-                resizeMode="contain"
-              />
-            </View>
-          )}
-        </Animated.View>
-      </ScrollView>
+        {userUri ? (
+          <BeforeAfterSlider
+            beforeUri={userUri}
+            afterUri={resultUrl}
+            fill
+            style={styles.slider}
+          />
+        ) : (
+          <Image
+            source={{ uri: resultUrl }}
+            style={styles.afterImage}
+            resizeMode="contain"
+          />
+        )}
+      </Animated.View>
 
-      <View style={styles.bottom}>
-        <Text style={styles.caption}>Your look</Text>
-        {shopUrl ? (
-          <PrimaryButton
-            label="Shop this look"
-            onPress={() => openExternalUrl(shopUrl)}
-          />
-        ) : null}
-        <View style={styles.row}>
-          <GlassButton
-            label="Try another"
-            compact
-            onPress={() =>
-              scanId
-                ? router.replace(`/try-on/${scanId}`)
-                : router.replace("/(tabs)/camera")
-            }
-            style={styles.flex}
-          />
-          <GlassButton
-            label="Scan something else"
-            compact
+      <View
+        style={[
+          styles.dock,
+          {
+            paddingBottom: Math.max(insets.bottom, spacing.md),
+          },
+        ]}
+      >
+        <View style={styles.actions}>
+          <Pressable
             onPress={() => {
-              session.lastUserImageUri = undefined;
-              session.lastResultImageUrl = undefined;
-              router.replace("/(tabs)/camera");
+              lightImpact();
+              tryAgain();
             }}
-            style={styles.flex}
-          />
+            style={({ pressed }) => [
+              styles.ghostBtn,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.ghostLabel}>Retry</Text>
+          </Pressable>
+
+          {shopUrl ? (
+            <Pressable
+              onPress={() => {
+                lightImpact();
+                openExternalUrl(shopUrl);
+              }}
+              style={({ pressed }) => [
+                styles.shopBtn,
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text style={styles.shopLabel}>Shop</Text>
+            </Pressable>
+          ) : null}
+
+          <Pressable
+            onPress={() => {
+              lightImpact();
+              newScan();
+            }}
+            style={({ pressed }) => [
+              styles.ghostBtn,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.ghostLabel}>New scan</Text>
+          </Pressable>
         </View>
       </View>
     </View>
@@ -146,21 +172,64 @@ function createStyles(colors: ThemeColors) {
       flex: 1,
       backgroundColor: colors.canvas,
     },
-    glow: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      height: 200,
-      backgroundColor: colors.gradientTop,
+    media: {
+      flex: 1,
+      width: "100%",
     },
-    scroll: {
+    slider: {
       flex: 1,
     },
-    scrollContent: {
-      flexGrow: 1,
-      paddingHorizontal: spacing.md,
-      paddingBottom: spacing.md,
+    afterImage: {
+      flex: 1,
+      width: "100%",
+      backgroundColor: colors.canvas,
+    },
+    dock: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      backgroundColor: colors.canvas,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.glassBorder,
+    },
+    actions: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+    },
+    shopBtn: {
+      flex: 1.4,
+      height: 44,
+      borderRadius: radii.full,
+      backgroundColor: colors.primary,
+      alignItems: "center",
+      justifyContent: "center",
+      ...shadows.card,
+    },
+    shopLabel: {
+      ...type.caption,
+      color: colors.primaryText,
+      fontWeight: "700",
+      fontSize: 14,
+    },
+    ghostBtn: {
+      flex: 1,
+      height: 44,
+      borderRadius: radii.full,
+      backgroundColor: colors.glass,
+      borderWidth: 1,
+      borderColor: colors.glassBorder,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    ghostLabel: {
+      ...type.caption,
+      color: colors.text,
+      fontWeight: "600",
+      fontSize: 13,
+    },
+    pressed: {
+      opacity: 0.85,
+      transform: [{ scale: 0.98 }],
     },
     centered: {
       flex: 1,
@@ -170,42 +239,6 @@ function createStyles(colors: ThemeColors) {
       padding: spacing.xl,
       gap: spacing.lg,
     },
-    sliderArea: {
-      width: "100%",
-    },
-    afterOnly: {
-      width: "100%",
-      minHeight: 320,
-      borderRadius: radii.lg,
-      backgroundColor: colors.surface,
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 1,
-      borderColor: colors.glassBorder,
-      ...shadows.card,
-    },
-    afterImage: {
-      width: "100%",
-      height: "100%",
-    },
-    bottom: {
-      paddingHorizontal: spacing.xl,
-      paddingTop: spacing.md,
-      gap: spacing.md,
-      backgroundColor: colors.surfaceRaised,
-      borderTopWidth: 1,
-      borderTopColor: colors.glassBorder,
-    },
-    caption: {
-      ...type.label,
-      color: colors.accent,
-      textTransform: "uppercase",
-    },
-    row: {
-      flexDirection: "row",
-      gap: spacing.sm,
-    },
-    flex: { flex: 1 },
     error: {
       ...type.body,
       color: colors.error,
