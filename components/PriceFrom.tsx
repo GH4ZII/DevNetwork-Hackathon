@@ -7,6 +7,7 @@ import {
   currencyForCountry,
   deviceCountry,
   formatMoney,
+  isLocalMarketUrl,
   normalizeCurrencyCode,
 } from "../lib/region";
 
@@ -15,53 +16,80 @@ type Props = {
   offers?: Offer[];
 };
 
+type Priced = {
+  priceText?: string;
+  priceValue?: number;
+  currency?: string;
+  url?: string;
+};
+
 export function matchPriceText(
   match?: ProductMatch | null,
   offers: Offer[] = [],
 ): string | null {
-  if (match?.priceText) return match.priceText;
-
   const country = deviceCountry();
-  if (match && typeof match.priceValue === "number") {
-    const currency =
-      normalizeCurrencyCode(match.currency, country) ??
-      currencyForCountry(country);
-    return formatMoney(match.priceValue, currency, country);
-  }
-
-  const linked = findRelatedOffer(match, offers);
-  if (linked?.priceText) return linked.priceText;
-  if (linked && typeof linked.priceValue === "number") {
-    const currency =
-      normalizeCurrencyCode(linked.currency, country) ??
-      currencyForCountry(country);
-    return formatMoney(linked.priceValue, currency, country);
-  }
-
-  const priced = offers.filter(
-    (offer) =>
-      offer.priceText ||
-      (typeof offer.priceValue === "number" && !Number.isNaN(offer.priceValue)),
-  );
-  if (priced.length === 0) return null;
-
   const market = currencyForCountry(country);
-  const inMarket = priced.filter(
-    (offer) => normalizeCurrencyCode(offer.currency, country) === market,
+  const priced = offers.filter((offer) => hasPrice(offer));
+  const inMarketOffers = priced.filter((offer) =>
+    isInMarketItem(offer, country, market),
   );
-  const pool = inMarket.length > 0 ? inMarket : priced;
+
+  const linkedInMarket = findRelatedOffer(match, inMarketOffers);
+  if (linkedInMarket) return displayPrice(linkedInMarket, country, false);
+
+  if (match && hasPrice(match) && isInMarketItem(match, country, market)) {
+    return displayPrice(match, country, false);
+  }
+
+  if (match && hasPrice(match)) {
+    return displayPrice(match, country, true);
+  }
+
+  const linked = findRelatedOffer(match, priced);
+  if (linked) {
+    const foreign = !isInMarketItem(linked, country, market);
+    return displayPrice(linked, country, foreign);
+  }
+
+  if (priced.length === 0) return null;
+  const pool = inMarketOffers.length > 0 ? inMarketOffers : priced;
   const lowest = pool.reduce((a, b) =>
     (a.priceValue ?? Infinity) <= (b.priceValue ?? Infinity) ? a : b,
   );
-  if (lowest.priceText) {
-    return lowest.priceText.startsWith("From ")
-      ? lowest.priceText
-      : `From ${lowest.priceText}`;
+  return displayPrice(lowest, country, true);
+}
+
+function hasPrice(item: Priced): boolean {
+  return Boolean(
+    item.priceText ||
+      (typeof item.priceValue === "number" && !Number.isNaN(item.priceValue)),
+  );
+}
+
+function isInMarketItem(
+  item: Priced,
+  country: string,
+  market: string,
+): boolean {
+  if (item.url) return isLocalMarketUrl(item.url, country);
+  return normalizeCurrencyCode(item.currency) === market;
+}
+
+function displayPrice(
+  item: Priced,
+  country: string,
+  fromPrefix: boolean,
+): string | null {
+  if (item.priceText) {
+    return fromPrefix && !item.priceText.startsWith("From ")
+      ? `From ${item.priceText}`
+      : item.priceText;
   }
-  if (typeof lowest.priceValue === "number") {
-    const currency =
-      normalizeCurrencyCode(lowest.currency, country) ?? market;
-    return `From ${formatMoney(lowest.priceValue, currency, country)}`;
+  if (typeof item.priceValue === "number") {
+    const currency = normalizeCurrencyCode(item.currency);
+    if (!currency) return null;
+    const formatted = formatMoney(item.priceValue, currency, country);
+    return fromPrefix ? `From ${formatted}` : formatted;
   }
   return null;
 }
@@ -71,9 +99,7 @@ function findRelatedOffer(
   offers: Offer[] = [],
 ): Offer | undefined {
   if (!match) return undefined;
-  const priced = offers.filter(
-    (offer) => offer.priceText || offer.priceValue != null,
-  );
+  const priced = offers.filter((offer) => hasPrice(offer));
   if (priced.length === 0) return undefined;
 
   const byUrl = priced.find((offer) => sameListing(offer.url, match.url));

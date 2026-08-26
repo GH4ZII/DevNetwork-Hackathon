@@ -60,7 +60,7 @@ function toProductMatch(
   country: string,
 ): ProductMatch {
   const url = asUrl(match.link);
-  const price = parsePrice(match, country);
+  const price = parsePrice(match);
   return {
     id: `match_${typeof match.position === "number" ? match.position : 1}`,
     title: safeTitle(match.title).trim() || "Unknown product",
@@ -80,36 +80,75 @@ function attachMatchPrice(
   offers: Offer[],
   country: string,
 ): void {
-  if (match.priceText || match.priceValue != null) return;
-
-  const linked = findRelatedOffer(match, offers);
-  if (linked) {
-    match.priceText = linked.priceText;
-    match.priceValue = linked.priceValue;
-    match.currency = linked.currency;
-    return;
-  }
-
+  const marketCurrency = currencyForCountry(country);
   const priced = offers.filter(
     (offer) => offer.priceText || offer.priceValue != null,
   );
-  if (priced.length === 0) return;
+  const inMarketOffers = priced.filter((offer) =>
+    isInMarketItem(offer, country, marketCurrency),
+  );
 
-  const marketCurrency = currencyForCountry(country);
-  const inMarket = priced.filter((offer) => offer.currency === marketCurrency);
-  const pool = inMarket.length > 0 ? inMarket : priced;
+  const linkedInMarket = findRelatedOffer(match, inMarketOffers);
+  if (linkedInMarket) {
+    applyOfferPrice(match, linkedInMarket, country, false);
+    if (linkedInMarket.url) match.url = linkedInMarket.url;
+    if (linkedInMarket.merchant) match.source = linkedInMarket.merchant;
+    return;
+  }
+
+  if (hasPrice(match) && isInMarketItem(match, country, marketCurrency)) {
+    return;
+  }
+
+  if (hasPrice(match)) {
+    applyOfferPrice(match, match, country, true);
+    return;
+  }
+
+  const linked = findRelatedOffer(match, priced);
+  if (linked) {
+    const foreign = !isInMarketItem(linked, country, marketCurrency);
+    applyOfferPrice(match, linked, country, foreign);
+    return;
+  }
+
+  if (priced.length === 0) return;
+  const pool = inMarketOffers.length > 0 ? inMarketOffers : priced;
   const lowest = pool.reduce((a, b) =>
     (a.priceValue ?? Infinity) <= (b.priceValue ?? Infinity) ? a : b,
   );
+  applyOfferPrice(match, lowest, country, true);
+}
+
+function hasPrice(item: { priceText?: string; priceValue?: number }): boolean {
+  return Boolean(item.priceText) || item.priceValue != null;
+}
+
+function isInMarketItem(
+  item: { url?: string; currency?: string },
+  country: string,
+  marketCurrency: string,
+): boolean {
+  if (item.url) return isLocalMarketUrl(item.url, country);
+  return Boolean(item.currency && item.currency === marketCurrency);
+}
+
+function applyOfferPrice(
+  match: ProductMatch,
+  source: { priceText?: string; priceValue?: number; currency?: string },
+  country: string,
+  fromPrefix: boolean,
+): void {
   const formatted =
-    lowest.priceText ??
-    formatOfferPrice(lowest.priceValue, lowest.currency, country);
+    source.priceText ??
+    formatOfferPrice(source.priceValue, source.currency, country);
   if (!formatted) return;
-  match.priceText = formatted.startsWith("From ")
-    ? formatted
-    : `From ${formatted}`;
-  match.priceValue = lowest.priceValue;
-  match.currency = lowest.currency;
+  match.priceText =
+    fromPrefix && !formatted.startsWith("From ")
+      ? `From ${formatted}`
+      : formatted;
+  match.priceValue = source.priceValue;
+  match.currency = source.currency;
 }
 
 function findRelatedOffer(
@@ -213,7 +252,7 @@ function toOffer(match: LensVisualMatch, country: string): Offer | null {
   const url = asUrl(match.link);
   if (!url) return null;
 
-  const price = parsePrice(match, country);
+  const price = parsePrice(match);
   return {
     id: `offer_${typeof match.position === "number" ? match.position : randomUUID()}`,
     title: safeTitle(match.title).trim() || "Untitled offer",
@@ -235,10 +274,7 @@ function asUrl(value: unknown): string | undefined {
   return trimmed || undefined;
 }
 
-function parsePrice(
-  match: LensVisualMatch,
-  country: string,
-): {
+function parsePrice(match: LensVisualMatch): {
   text?: string;
   value?: number;
   currency?: string;
@@ -252,9 +288,7 @@ function parsePrice(
     return {
       text,
       value,
-      currency:
-        inferCurrency(text, country) ??
-        (value != null ? currencyForCountry(country) : undefined),
+      currency: inferCurrency(text),
     };
   }
 
@@ -272,10 +306,7 @@ function parsePrice(
         typeof match.price.currency === "string"
           ? match.price.currency
           : undefined,
-        country,
-      ) ??
-      inferCurrency(text, country) ??
-      (value != null ? currencyForCountry(country) : undefined);
+      ) ?? inferCurrency(text);
     return { text: text || undefined, value, currency };
   }
 
@@ -283,10 +314,7 @@ function parsePrice(
     typeof match.extracted_price === "number"
       ? match.extracted_price
       : undefined;
-  return {
-    value,
-    currency: value != null ? currencyForCountry(country) : undefined,
-  };
+  return { value, currency: undefined };
 }
 
 function compareOffers(
